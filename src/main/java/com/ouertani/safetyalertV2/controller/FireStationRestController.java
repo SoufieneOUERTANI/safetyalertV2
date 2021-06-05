@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,24 +31,31 @@ import com.ouertani.safetyalertV2.model.Person;
 import com.ouertani.safetyalertV2.service.IFireStationService;
 import com.ouertani.safetyalertV2.service.IMedicalRecordService;
 import com.ouertani.safetyalertV2.service.IPersonService;
+import com.ouertani.safetyalertV2.util.IncorrectParameterException;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
+@Data
 @RestController
 public class FireStationRestController {
-	
-	
-	
 
-	
+	private static final Logger logger = LogManager.getLogger("FireStationRestController");
+
+	/*
+	 * }catch(Exception e){ logger.error("Unable to process incoming vehicle",e); }
+	 * 
+	 * logger.info("Example log from {}", Example.class.getSimpleName());
+	 */
+
 	private IFireStationService fireStationService;
 	private IPersonService personService;
 	private IMedicalRecordService medicalRecordService;
 
 	@Autowired
-	public FireStationRestController(IFireStationService theFireStationService, IPersonService thePersonService, IMedicalRecordService theMedicalRecordService) {
+	public FireStationRestController(IFireStationService theFireStationService, IPersonService thePersonService,
+			IMedicalRecordService theMedicalRecordService) {
 		fireStationService = theFireStationService;
 		personService = thePersonService;
 		medicalRecordService = theMedicalRecordService;
@@ -136,49 +145,73 @@ public class FireStationRestController {
 	 ***
 	 */
 
-	
 	@GetMapping("/fireStation")
-	public GetFireStationClassReturn getFireStation(@RequestParam(defaultValue = "empty") String fireStationNumber) {
-		GetFireStationClassReturn getFireStationClassReturn = new GetFireStationClassReturn();
-		getFireStationClassReturn.setAdultNum(0);
-		getFireStationClassReturn.setChildNum(0);
-		getFireStationClassReturn.setPersonnes(new ArrayList<GetFireStationClass>());
-		
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Constants.DATE_FORMAT);
+	public GetFireStationClassReturn getFireStation(@RequestParam(defaultValue = "empty") String fireStationNumber)
+			throws IncorrectParameterException {
 
-		List<String> tempAdresses;
-		List<Person> tempPersons = null;
-		MedicalRecord tempMedicalRecord;
+		List<String> parameters = new ArrayList<String>();
+		String Request = "Get";
+		String URI = "/fireStation";
+		parameters.add("fireStationNumber : " + fireStationNumber);
 
-		tempAdresses = fireStationService.getAdressFireStation(fireStationNumber);
-		if (tempAdresses != null) {
-			for (String adress : tempAdresses) {
-				tempPersons = personService.getPersonAdress(adress);
-				for (Person tempPerson : tempPersons) {
-					tempMedicalRecord = medicalRecordService.getMedicalRecordPerson(tempPerson.getFirstName(),
-							tempPerson.getLastName());
-					GetFireStationClass tempGetFireStationClass = new GetFireStationClass(tempPerson.getFirstName(), tempPerson.getLastName(), tempPerson.getAddress(), tempPerson.getPhone());
-					System.out.println(tempGetFireStationClass);
-					getFireStationClassReturn.getPersonnes().add(tempGetFireStationClass);
-					System.out.println(getFireStationClassReturn);
+		logger.info("Request " + Request + " sur l'URI " + URI + " : avec les paramètres : " + parameters);
 
+		GetFireStationClassReturn getFireStationClassReturn = null;
 
-					if (Period.between(LocalDate.parse(tempMedicalRecord.getBirthdate(), formatter),
-							new Date(System.currentTimeMillis()).toInstant()
-									.atZone(ZoneId.systemDefault())
-									.toLocalDate())
-							.getYears() > 17)
-						getFireStationClassReturn.setAdultNum(getFireStationClassReturn.getAdultNum() + 1);
-					else
-						getFireStationClassReturn.setChildNum(getFireStationClassReturn.getChildNum() + 1);
+		try {
+
+			try {
+				Integer tempInt = Integer.parseInt(fireStationNumber);
+			} catch (NumberFormatException e) {
+				logger.warn("Request " + Request + " sur l'URI " + URI + " : avec les paramètres : " + parameters);
+				throw new IncorrectParameterException("Merci de saisir un paramètre numérique");
+			}
+
+			getFireStationClassReturn = new GetFireStationClassReturn();
+			getFireStationClassReturn.setAdultNum(0);
+			getFireStationClassReturn.setChildNum(0);
+			getFireStationClassReturn.setPersonnes(new ArrayList<GetFireStationClass>());
+
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Constants.DATE_FORMAT);
+
+			List<String> tempAdresses;
+			List<Person> tempPersons = null;
+			MedicalRecord tempMedicalRecord;
+
+			tempAdresses = fireStationService.getAdressFireStation(fireStationNumber);
+			if (tempAdresses != null) {
+				for (String adress : tempAdresses) {
+					tempPersons = personService.getPersonAdress(adress);
+					for (Person tempPerson : tempPersons) {
+						tempMedicalRecord = medicalRecordService.getMedicalRecordPerson(tempPerson.getFirstName(),
+								tempPerson.getLastName());
+						GetFireStationClass tempGetFireStationClass = new GetFireStationClass(tempPerson.getFirstName(),
+								tempPerson.getLastName(), tempPerson.getAddress(), tempPerson.getPhone());
+						// System.out.println(tempGetFireStationClass);
+						getFireStationClassReturn.getPersonnes().add(tempGetFireStationClass);
+						// System.out.println(getFireStationClassReturn);
+
+						if (Period.between(LocalDate.parse(tempMedicalRecord.getBirthdate(), formatter),
+								new Date(System.currentTimeMillis()).toInstant()
+										.atZone(ZoneId.systemDefault())
+										.toLocalDate())
+								.getYears() > 17)
+							getFireStationClassReturn.setAdultNum(getFireStationClassReturn.getAdultNum() + 1);
+						else
+							getFireStationClassReturn.setChildNum(getFireStationClassReturn.getChildNum() + 1);
+					}
 				}
 			}
+
+		} catch (Exception e) {
+			// e.printStackTrace();
+			logger.error("failed request " + Request + " sur l'URI " + URI + " : avec les paramètres : " + parameters,
+					e);
+			return null;
 		}
 
+		logger.info("Succeeded request " + Request + " sur l'URI " + URI + " : avec les paramètres : " + parameters);
 		return getFireStationClassReturn;
 
 	}
-	
-
-
 }

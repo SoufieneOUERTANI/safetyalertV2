@@ -18,8 +18,8 @@ import com.ouertani.safetyalertV2.model.Mapping;
 @Service
 public interface IMappingService {
 
-	public Mapping readJsonFile() throws JsonGenerationException, JsonMappingException, IOException;
+	public Mapping readJsonFile(String json_file) throws JsonGenerationException, JsonMappingException, IOException;
 	
-	public void writeJsonFile(Mapping mapping) throws JsonGenerationException, JsonMappingException, IOException;
+	public void writeJsonFile(String json_file, Mapping mapping) throws JsonGenerationException, JsonMappingException, IOException;
 
 }

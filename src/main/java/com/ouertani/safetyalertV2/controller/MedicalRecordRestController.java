@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.ouertani.safetyalertV2.constants.Constants;
 import com.ouertani.safetyalertV2.dto.FileJsonMapping;
 import com.ouertani.safetyalertV2.model.Mapping;
 import com.ouertani.safetyalertV2.model.MedicalRecord;
@@ -56,7 +57,7 @@ public class MedicalRecordRestController {
 	public Mapping global() throws JsonGenerationException, JsonMappingException, IOException {
 		
 		IMappingService mappingService = new MappingService();
-		return FileJsonMapping.mapping = mappingService.readJsonFile();
+		return FileJsonMapping.mapping = mappingService.readJsonFile(Constants.JSON_FILE);
 
 	}
 	
