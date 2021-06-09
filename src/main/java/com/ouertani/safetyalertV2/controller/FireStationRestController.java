@@ -12,6 +12,7 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -42,12 +44,6 @@ import lombok.NoArgsConstructor;
 public class FireStationRestController {
 
 	private static final Logger logger = LogManager.getLogger("FireStationRestController");
-
-	/*
-	 * }catch(Exception e){ logger.error("Unable to process incoming vehicle",e); }
-	 * 
-	 * logger.info("Example log from {}", Example.class.getSimpleName());
-	 */
 
 	private IFireStationService fireStationService;
 	private IPersonService personService;
@@ -73,8 +69,6 @@ public class FireStationRestController {
 		return (fireStationService.addFireStation(theFireStation));
 	}
 
-	// add mapping for PUT /fireStations - update existing fireStation
-
 	@PutMapping("/fireStation")
 	public FireStation updateFireStation(@RequestBody FireStation theFireStation) {
 
@@ -85,8 +79,6 @@ public class FireStationRestController {
 		}
 		return theFireStation;
 	}
-
-	// add mapping for DELETE /fireStations/{fireStationId} - delete fireStation
 
 	@DeleteMapping("/fireStation")
 	public String deleteFireStation(@RequestParam(defaultValue = "empty") String address,
@@ -111,40 +103,6 @@ public class FireStationRestController {
 
 	// ---------------------
 
-	/*
-	 * http://localhost:8080/firestation?stationNumber=<station_number>
-	 * 
-	 * Cette url doit retourner une liste des personnes couvertes par la caserne de
-	 * pompiers correspondante. Donc, si le numéro de station = 1, elle doit
-	 * renvoyer les habitants couverts par la station numéro 1. La liste doit
-	 * inclure les informations spécifiques suivantes : prénom, nom, adresse, numéro
-	 * de téléphone. De plus, elle doit fournir un décompte du nombre d'adultes et
-	 * du nombre d'enfants (tout individu âgé de 18 ans ou moins) dans la zone
-	 * desservie.
-	 ***
-	 * 
-	 * - Numéro de la station => "Get" dans "firestation" => List<Adress>
-	 * getAdressFireStation(long IdFireStation) - Si la station trouvée => Déduire
-	 * l'adresse 1 1 - List<Adress> getAdressFireStation(long IdFireStation)
-	 * 
-	 * - A patir de l'adresse => Get dans "Personnes" => List<Personne>
-	 * getPersonAdress(Sting Adress) Si l'adresse correspond => Get date de
-	 * naissance => MedicalRecord getMedicalRecordPerson(String firstName, String
-	 * lastName) 2 - List<Personne> getPersonAdress(Sting Adress) - A partir de la
-	 * date de naissance => Déterminer si adulte ou pas => boolean IsAdult(Date
-	 * BirthDay) 4 - int getAge(Date BirthDay) => Period.between(birthDate,
-	 * currentDate).getYears();
-	 * 
-	 * Renvoyer la liste DTO :
-	 * 
-	 * DTO
-	 * 
-	 * Int Nombre d'adultes Int Nomnre d'enfants
-	 * 
-	 * <personnes> (prénom, Nom, Adresse, numéro de téléphone)
-	 ***
-	 */
-
 	@GetMapping("/fireStation")
 	public GetFireStationClassReturn getFireStation(@RequestParam(defaultValue = "empty") String fireStationNumber)
 			throws IncorrectParameterException {
@@ -156,16 +114,25 @@ public class FireStationRestController {
 
 		logger.info("Request " + Request + " sur l'URI " + URI + " : avec les paramètres : " + parameters);
 
+		if (fireStationNumber == "empty") {
+			logger.warn(
+					"Request " + Request + " sur l'URI " + URI + " : avec les paramètres : " + parameters.toString());
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Custom Error : empty request parameter");
+
+		}
+
+		try {
+			Integer tempInt = Integer.parseInt(fireStationNumber);
+		} catch (NumberFormatException exc) {
+			logger.warn("Request " + Request + " sur l'URI " + URI + " : avec les paramètres : " + parameters.toString()
+					+ " Exception : " + exc.toString());
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Custom Error : Non numeric request parameter",
+					exc);
+		}
+
 		GetFireStationClassReturn getFireStationClassReturn = null;
 
 		try {
-
-			try {
-				Integer tempInt = Integer.parseInt(fireStationNumber);
-			} catch (NumberFormatException e) {
-				logger.warn("Request " + Request + " sur l'URI " + URI + " : avec les paramètres : " + parameters);
-				throw new IncorrectParameterException("Merci de saisir un paramètre numérique");
-			}
 
 			getFireStationClassReturn = new GetFireStationClassReturn();
 			getFireStationClassReturn.setAdultNum(0);
@@ -187,9 +154,7 @@ public class FireStationRestController {
 								tempPerson.getLastName());
 						GetFireStationClass tempGetFireStationClass = new GetFireStationClass(tempPerson.getFirstName(),
 								tempPerson.getLastName(), tempPerson.getAddress(), tempPerson.getPhone());
-						// System.out.println(tempGetFireStationClass);
 						getFireStationClassReturn.getPersonnes().add(tempGetFireStationClass);
-						// System.out.println(getFireStationClassReturn);
 
 						if (Period.between(LocalDate.parse(tempMedicalRecord.getBirthdate(), formatter),
 								new Date(System.currentTimeMillis()).toInstant()
@@ -203,15 +168,14 @@ public class FireStationRestController {
 				}
 			}
 
-		} catch (Exception e) {
+		} catch (Exception exc) {
 			// e.printStackTrace();
 			logger.error("failed request " + Request + " sur l'URI " + URI + " : avec les paramètres : " + parameters,
-					e);
+					exc);
 			return null;
 		}
 
 		logger.info("Succeeded request " + Request + " sur l'URI " + URI + " : avec les paramètres : " + parameters);
 		return getFireStationClassReturn;
-
 	}
 }

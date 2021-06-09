@@ -1,0 +1,81 @@
+[1mdiff --git a/src/main/java/com/ouertani/safetyalertV2/controller/FireStationRestController.java b/src/main/java/com/ouertani/safetyalertV2/controller/FireStationRestController.java[m
+[1mindex 689cdcd..034f4a2 100644[m
+[1m--- a/src/main/java/com/ouertani/safetyalertV2/controller/FireStationRestController.java[m
+[1m+++ b/src/main/java/com/ouertani/safetyalertV2/controller/FireStationRestController.java[m
+[36m@@ -12,6 +12,8 @@[m [mimport java.util.List;[m
+ import org.apache.logging.log4j.LogManager;[m
+ import org.apache.logging.log4j.Logger;[m
+ import org.springframework.beans.factory.annotation.Autowired;[m
+[32m+[m[32mimport org.springframework.http.HttpStatus;[m
+[32m+[m[32mimport org.springframework.http.ResponseEntity;[m
+ import org.springframework.web.bind.annotation.DeleteMapping;[m
+ import org.springframework.web.bind.annotation.GetMapping;[m
+ import org.springframework.web.bind.annotation.PostMapping;[m
+[36m@@ -31,7 +33,7 @@[m [mimport com.ouertani.safetyalertV2.model.Person;[m
+ import com.ouertani.safetyalertV2.service.IFireStationService;[m
+ import com.ouertani.safetyalertV2.service.IMedicalRecordService;[m
+ import com.ouertani.safetyalertV2.service.IPersonService;[m
+[31m-import com.ouertani.safetyalertV2.util.IncorrectParameterException;[m
+[32m+[m[32mimport com.ouertani.safetyalertV2.util.error.CustomException;[m
+ [m
+ import lombok.Data;[m
+ import lombok.NoArgsConstructor;[m
+[36m@@ -39,6 +41,7 @@[m [mimport lombok.NoArgsConstructor;[m
+ @NoArgsConstructor[m
+ @Data[m
+ @RestController[m
+[32m+[m[32m//@Api(description = "API pour manipulation des firestation")[m
+ public class FireStationRestController {[m
+ [m
+ 	private static final Logger logger = LogManager.getLogger("FireStationRestController");[m
+[36m@@ -145,9 +148,14 @@[m [mpublic class FireStationRestController {[m
+ 	 ***[m
+ 	 */[m
+ [m
+[32m+[m	[32m// @ApiOperation(value = "A partir d'un numéro de station[m
+[32m+[m	[32m// \"?fireStationNumber=<fireStationNumber>\", récupère tous les personnes dont[m
+[32m+[m	[32m// l'adresse est celle gérée par la firestation, avec un resecencement des[m
+[32m+[m	[32m// personnes adultes et mineures")[m
+ 	@GetMapping("/fireStation")[m
+[31m-	public GetFireStationClassReturn getFireStation(@RequestParam(defaultValue = "empty") String fireStationNumber)[m
+[31m-			throws IncorrectParameterException {[m
+[32m+[m	[32mpublic ResponseEntity<GetFireStationClassReturn> getFireStation([m
+[32m+[m			[32m@RequestParam(defaultValue = "empty") String fireStationNumber)[m
+[32m+[m			[32mthrows CustomException {[m
+ [m
+ 		List<String> parameters = new ArrayList<String>();[m
+ 		String Request = "Get";[m
+[36m@@ -156,6 +164,12 @@[m [mpublic class FireStationRestController {[m
+ [m
+ 		logger.info("Request " + Request + " sur l'URI " + URI + " : avec les paramètres : " + parameters);[m
+ [m
+[32m+[m		[32mif (fireStationNumber == "empty") {[m
+[32m+[m			[32mlogger.warn("Request " + Request + " sur l'URI " + URI + " : avec les paramètres : " + parameters);[m
+[32m+[m			[32mthrow new CustomException("Request " + Request + " sur l'URI " + URI + " : avec les paramètres : "[m
+[32m+[m					[32m+ parameters + " n'est pas correcte");[m
+[32m+[m		[32m}[m
+[32m+[m
+ 		GetFireStationClassReturn getFireStationClassReturn = null;[m
+ [m
+ 		try {[m
+[36m@@ -164,7 +178,10 @@[m [mpublic class FireStationRestController {[m
+ 				Integer tempInt = Integer.parseInt(fireStationNumber);[m
+ 			} catch (NumberFormatException e) {[m
+ 				logger.warn("Request " + Request + " sur l'URI " + URI + " : avec les paramètres : " + parameters);[m
+[31m-				throw new IncorrectParameterException("Merci de saisir un paramètre numérique");[m
+[32m+[m				[32mthrow new CustomException("Request " + Request + " sur l'URI " + URI + " : avec les paramètres : "[m
+[32m+[m						[32m+ parameters + " n'est pas correcte");[m
+[32m+[m				[32m// throw new IncorrectParameterException("Merci de saisir un paramètre[m
+[32m+[m				[32m// numérique");[m
+ 			}[m
+ [m
+ 			getFireStationClassReturn = new GetFireStationClassReturn();[m
+[36m@@ -211,7 +228,7 @@[m [mpublic class FireStationRestController {[m
+ 		}[m
+ [m
+ 		logger.info("Succeeded request " + Request + " sur l'URI " + URI + " : avec les paramètres : " + parameters);[m
+[31m-		return getFireStationClassReturn;[m
+[32m+[m		[32mreturn new ResponseEntity<>(getFireStationClassReturn, HttpStatus.OK);[m
+ [m
+ 	}[m
+ }[m
