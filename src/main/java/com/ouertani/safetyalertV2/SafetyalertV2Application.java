@@ -10,7 +10,10 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.ouertani.safetyalertV2.service.IMappingService;
 import com.ouertani.safetyalertV2.service.impl.MappingService;
 
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
+
 @SpringBootApplication
+@EnableSwagger2
 public class SafetyalertV2Application {
 
 	static IMappingService mappingService = new MappingService();
