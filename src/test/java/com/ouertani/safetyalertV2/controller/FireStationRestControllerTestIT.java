@@ -26,13 +26,6 @@ import com.ouertani.safetyalertV2.dto.FileJsonMapping;
 import com.ouertani.safetyalertV2.dto.GetFireStationClassReturn;
 import com.ouertani.safetyalertV2.service.IMappingService;
 
-//@ExtendWith(SpringExtension.class)
-//@ContextConfiguration(classes = { SpringTestConfiguration.class })
-//@WebIntegrationTest
-//@WebMvcTest
-//@ExtendWith(SpringExtension.class)
-//@WebMvcTest(controllers = FireStationRestController.class)
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class FireStationRestControllerTestIT {
 
@@ -87,11 +80,9 @@ class FireStationRestControllerTestIT {
 	}
 
 	@Test
-	final void testGetFireStation() throws Exception {
+	final void testGetFireStation_fireStationNumber_2() throws Exception {
 
 		FileJsonMapping.mapping = mappingService.readJsonFile(TestConstants.JSON_TEST_FILE);
-
-		// System.out.print(FileJsonMapping.mapping);
 
 		MvcResult mvcResult;
 
@@ -156,11 +147,10 @@ class FireStationRestControllerTestIT {
 
 		assertEquals(5, readValue.getPersonnes().size());
 
-		/*
-		 * net.minidev.json.JSONArray jsonArray = com.jayway.jsonpath.JsonPath
-		 * .read(mvcResult.getResponse().getContentAsString(), "$.personnes[*]");
-		 * assertEquals(5, jsonArray.size());
-		 */
+		net.minidev.json.JSONArray jsonArray = com.jayway.jsonpath.JsonPath
+				.read(mvcResult.getResponse().getContentAsString(), "$.personnes[*]");
+		assertEquals(5, jsonArray.size());
+
 	}
 
 }

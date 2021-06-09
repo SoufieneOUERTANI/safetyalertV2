@@ -57,21 +57,6 @@ class FireStationRestControllerTest {
 	@Test
 	final void testGetFireStation() throws Exception {
 
-		// List<String> tempListAdresses = Arrays.asList("Adress1", "Adress2");
-
-		/*
-		 * fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders .get("/{id}",
-		 * 2) //.content(asJsonString(new Person("Tunis", "Email@gmail.com",
-		 * "firstNameSample", "lastNameSample", // "06.00.00.00.00", "Zip Code")))
-		 * .contentType(MediaType.APPLICATION_JSON) .accept(MediaType.APPLICATION_JSON)
-		 * ) .andExpect(status().isOk())
-		 * //.andExpect(MockMvcResultMatchers.jsonPath("$.firstName").value("firstName2"
-		 * ))
-		 * //.andExpect(MockMvcResultMatchers.jsonPath("$.lastName").value("lastName2"))
-		 * //.andExpect(MockMvcResultMatchers.jsonPath("$.email").value(
-		 * "email2@mail.com")) ;
-		 */
-
 		when(fireStationService.getAdressFireStation(anyString())).thenReturn(Arrays.asList("Adress1", "Adress2"));
 
 		when(personService.getPersonAdress("Adress1")).thenReturn(
@@ -137,28 +122,6 @@ class FireStationRestControllerTest {
 				.read(mvcResult.getResponse().getContentAsString(), "$.personnes[*]");
 		assertEquals(3, jsonArray.size());
 
-		// System.out.println("readValue : "+readValue);
-
-		// JSONArray array = new
-		// JSONArray(mvcResult.getResponse().getContentAsString());
-		// RestAssured.when().get("/fireStation?stationNumber=2").then().assertThat().body("personnes.firstName",
-		// equalTo("firstName1"));
-
-		/*
-		 * 
-		 * List<String> values = RestAssured.when().get("/fireStation?stationNumber=2")
-		 * .then().extract().jsonPath() .getList("personnes.firstName");
-		 * System.out.println(values); assertTrue(values.contains("firstName1"));
-		 */
-
-		/*
-		 * int count = 0; for(int i = 0; i < array.length(); i++) { JSONObject element =
-		 * array.getJSONObject(i); System.out.println(element);
-		 */
-		/*
-		 * String location = element.getString("Location"); if(location.equals("TEXAS"))
-		 * { count ++; } }
-		 */
 	}
 
 }
