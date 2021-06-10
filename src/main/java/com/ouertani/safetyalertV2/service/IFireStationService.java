@@ -15,11 +15,17 @@ public interface IFireStationService {
 	FireStation addFireStation(FireStation firstStation)
 			throws JsonGenerationException, JsonMappingException, IOException;
 
-	FireStation putFireStation(FireStation firstStation);
+	FireStation putFireStation(FireStation firstStation)
+			throws JsonGenerationException, JsonMappingException, IOException;
 
-	boolean deleteFireStationAdress(String address);
+	List<FireStation> deleteFireStationAdress(String address)
+			throws JsonGenerationException, JsonMappingException, IOException;
 
-	boolean deleteFireStationStation(String station);
+	List<FireStation> deleteFireStationStation(String station)
+			throws JsonGenerationException, JsonMappingException, IOException;
+
+	List<FireStation> deleteFireStation(String address, String station)
+			throws JsonGenerationException, JsonMappingException, IOException;
 
 	// ---
 

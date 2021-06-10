@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -60,7 +61,8 @@ public class FireStationRestController {
 		medicalRecordService = theMedicalRecordService;
 	}
 
-	@PostMapping
+	@PostMapping("/fireStation")
+	@ResponseStatus(code = HttpStatus.CREATED)
 	public FireStation addFireStation(@RequestBody FireStation theFireStation)
 			throws JsonGenerationException, JsonMappingException, IOException {
 
@@ -69,11 +71,13 @@ public class FireStationRestController {
 			throw new RuntimeException("Impossible to add the fireStation - " + theFireStation.getAddress() + " - "
 					+ theFireStation.getStation());
 		}
-		return (fireStationService.addFireStation(theFireStation));
+		return (tempFireStation);
 	}
 
-	@PutMapping
-	public FireStation updateFireStation(@RequestBody FireStation theFireStation) {
+	@PutMapping("/fireStation")
+	@ResponseStatus(code = HttpStatus.ACCEPTED)
+	public FireStation updateFireStation(@RequestBody FireStation theFireStation)
+			throws JsonGenerationException, JsonMappingException, IOException {
 
 		FireStation tempFireStation = fireStationService.putFireStation(theFireStation);
 		if (tempFireStation == null) {
@@ -83,25 +87,32 @@ public class FireStationRestController {
 		return theFireStation;
 	}
 
-	@DeleteMapping
-	public String deleteFireStation(@RequestParam(defaultValue = "empty") String address,
-			@RequestParam(defaultValue = "empty") String station) {
-		if (address == "empty" && station == "empty")
-			return "Please give either an \"address\" and a \"station\"";
-		if (address != "empty" && station != "empty")
-			return "Please either the \"address\" or the \"station\" should be in parameter";
+	@DeleteMapping("/fireStation")
+	@ResponseStatus(code = HttpStatus.ACCEPTED)
+	public String deleteFireStation(@RequestParam(defaultValue = "empty") String fireStationAdress,
+			@RequestParam(defaultValue = "empty") String fireStationNumber)
+			throws JsonGenerationException, JsonMappingException, IOException {
 
-		boolean tempFireStation = false;
-		if (address != "empty")
-			tempFireStation = fireStationService.deleteFireStationAdress(address);
-		else
-			tempFireStation = fireStationService.deleteFireStationStation(station);
+		logger.info(fireStationAdress + "/" + fireStationNumber);
 
-		if (tempFireStation == false) {
-			throw new RuntimeException("FireStation not found - " + ((address == "empty") ? "" : address) + " - "
-					+ ((station == "empty") ? "" : station));
+		if (fireStationAdress.equals("empty") && fireStationNumber.equals("empty"))
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Pour la requête DELETE merci de saisir l'un des deux paramètres fireStationAdress ou fireStationNumber");
+
+		List<FireStation> tempFireStation = new ArrayList<FireStation>();
+		if (!fireStationAdress.equals("empty") && fireStationNumber.equals("empty"))
+			tempFireStation = fireStationService.deleteFireStationAdress(fireStationAdress);
+		if (!fireStationNumber.equals("empty") && fireStationAdress.equals("empty"))
+			tempFireStation = fireStationService.deleteFireStationStation(fireStationNumber);
+		if (!fireStationNumber.equals("empty") && !fireStationAdress.equals("empty"))
+			tempFireStation = fireStationService.deleteFireStation(fireStationAdress, fireStationNumber);
+
+		if (tempFireStation.size() == 0) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+					"FireStation not found - " + ((fireStationAdress == "empty") ? "" : fireStationAdress) + " - "
+							+ ((fireStationNumber == "empty") ? "" : fireStationNumber));
 		}
-		return "Deleted fireStation id - " + address + " - " + station;
+		return ("Deleted fireStations - " + tempFireStation.toString());
 	}
 
 	// ---------------------
@@ -129,6 +140,7 @@ public class FireStationRestController {
 //					required = false) String fireStationNumber)
 
 	@GetMapping("/fireStation")
+	@ResponseStatus(code = HttpStatus.FOUND)
 	public GetFireStationClassReturn getFireStation(
 			@RequestParam Map<String, String> allParams) {
 

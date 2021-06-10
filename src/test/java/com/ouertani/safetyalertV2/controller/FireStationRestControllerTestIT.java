@@ -1,10 +1,17 @@
 package com.ouertani.safetyalertV2.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -12,6 +19,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -21,13 +29,21 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ouertani.safetyalertV2.constants.TestConstants;
 import com.ouertani.safetyalertV2.dto.FileJsonMapping;
 import com.ouertani.safetyalertV2.dto.GetFireStationClassReturn;
+import com.ouertani.safetyalertV2.model.FireStation;
 import com.ouertani.safetyalertV2.service.IMappingService;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class FireStationRestControllerTestIT {
+
+	private static final Logger logger = LogManager.getLogger("FireStationRestController");
+
+	@Value("${JSON_FILE}")
+	private String JSON_FILE;
+
+	@Value("${JSON_FILE_SAVE}")
+	private String JSON_FILE_SAVE;
 
 	@Autowired
 	IMappingService mappingService;
@@ -53,36 +69,46 @@ class FireStationRestControllerTestIT {
 
 	@BeforeEach
 	void setUp() throws Exception {
+
+		Path source = Paths.get(JSON_FILE_SAVE);
+		Path target = Paths.get(JSON_FILE);
+		try {
+			System.out.println(Files.deleteIfExists(target));
+			System.out.println(Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	@AfterEach
 	void tearDown() throws Exception {
 	}
 
-	@Test
-	final void testFireStationRestController() {
-		fail("Not yet implemented"); // TODO
-	}
+//	@Test
+//	final void testFireStationRestController() {
+//		fail("Not yet implemented"); // TODO
+//	}
+//
+//	@Test
+//	final void testAddFireStation() {
+//		fail("Not yet implemented"); // TODO
+//	}
+//
+//	@Test
+//	final void testUpdateFireStation() {
+//		fail("Not yet implemented"); // TODO
+//	}
+//
+//	@Test
+//	final void testDeleteFireStation() {
+//		fail("Not yet implemented"); // TODO
+//	}
 
 	@Test
-	final void testAddFireStation() {
-		fail("Not yet implemented"); // TODO
-	}
+	final void testGetFireStation_fireStationNumber_2_isFound() throws Exception {
 
-	@Test
-	final void testUpdateFireStation() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	@Test
-	final void testDeleteFireStation() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	@Test
-	final void testGetFireStation_fireStationNumber_2() throws Exception {
-
-		FileJsonMapping.mapping = mappingService.readJsonFile(TestConstants.JSON_TEST_FILE);
+		FileJsonMapping.mapping = mappingService.readJsonFile(JSON_FILE);
 
 		MvcResult mvcResult;
 
@@ -93,7 +119,7 @@ class FireStationRestControllerTestIT {
 				// .content(Util.asJsonString(new Adress(0, "Adress_01", null)))
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk())
+				.andExpect(status().isFound())
 				.andExpect(jsonPath("$.childNum").exists())
 				.andExpect(jsonPath("$.childNum").value("1"))
 				.andExpect(jsonPath("$.adultNum").exists())
@@ -151,6 +177,168 @@ class FireStationRestControllerTestIT {
 				.read(mvcResult.getResponse().getContentAsString(), "$.personnes[*]");
 		assertEquals(5, jsonArray.size());
 
+	}
+
+	@Test
+	final void testPostFireStation_AlreadyExist_isConflict() throws Exception {
+
+		MvcResult mvcResult;
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		FireStation tempFireStation = new FireStation("1509 Culver St", "3");
+
+		String tempFireStationJson = mapper.writeValueAsString(tempFireStation);
+
+		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
+				.post("/fireStation")
+				.content(tempFireStationJson)
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isConflict())
+				.andReturn();
+	}
+
+	@Test
+	final void testPostFireStation_NotAlreadyExist_isCreated() throws Exception {
+
+		MvcResult mvcResult;
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		logger.debug("mapping : " + mappingService.readJsonFile(JSON_FILE));
+
+		FireStation tempFireStation = new FireStation("NouvelleAdresse", "3");
+
+		String tempFireStationJson = mapper.writeValueAsString(tempFireStation);
+
+		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
+				.post("/fireStation")
+				.content(tempFireStationJson)
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated())
+				.andReturn();
+	}
+
+	@Test
+	final void testDeleteFireStation_WithoutParamters_isBadRequest() throws Exception {
+
+		MvcResult mvcResult;
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		FireStation tempFireStation = new FireStation("1509 Culver St", "3");
+
+		String tempFireStationJson = mapper.writeValueAsString(tempFireStation);
+
+		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
+				.delete("/fireStation")
+				.content(tempFireStationJson)
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andReturn();
+	}
+
+	@Test
+	final void testDeleteFireStation_WithGoodParamters_isAccepted() throws Exception {
+
+		MvcResult mvcResult;
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		FireStation tempFireStation = new FireStation("1509 Culver St", "3");
+
+		String tempFireStationJson = mapper.writeValueAsString(tempFireStation);
+
+		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
+				.delete("/fireStation?fireStationAdress=1509 Culver St&fireStationNumber=3")
+				.content(tempFireStationJson)
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isAccepted())
+				.andReturn();
+	}
+
+	@Test
+	final void testDeleteFireStation_WithBadParamtersValues_isNotFound() throws Exception {
+
+		MvcResult mvcResult;
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		FireStation tempFireStation = new FireStation("1509 Culver St", "3");
+
+		String tempFireStationJson = mapper.writeValueAsString(tempFireStation);
+
+		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
+				.delete("/fireStation?fireStationAdress=1509 Culver St___&fireStationNumber=3")
+				.content(tempFireStationJson)
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNotFound())
+				.andReturn();
+	}
+
+	@Test
+	final void testDeleteFireStation_WithGoodParamterFireStationNumber_isAccepted() throws Exception {
+
+		MvcResult mvcResult;
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		FireStation tempFireStation = new FireStation("1509 Culver St", "3");
+
+		String tempFireStationJson = mapper.writeValueAsString(tempFireStation);
+
+		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
+				.delete("/fireStation?fireStationNumber=3")
+				.content(tempFireStationJson)
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isAccepted())
+				.andReturn();
+	}
+
+	@Test
+	final void testDeleteFireStation_WithGoodParamterfireStationAdress_isAccepted() throws Exception {
+
+		MvcResult mvcResult;
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		FireStation tempFireStation = new FireStation("1509 Culver St", "3");
+
+		String tempFireStationJson = mapper.writeValueAsString(tempFireStation);
+
+		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
+				.delete("/fireStation?fireStationAdress=1509 Culver St")
+				.content(tempFireStationJson)
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isAccepted())
+				.andReturn();
+	}
+
+	@Test
+	final void testUpdateFireStation_WithGoodParamterfireStationAdress_isAccepted() throws Exception {
+
+		MvcResult mvcResult;
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		FireStation tempFireStation = new FireStation("1509 Culver St", "22");
+
+		String tempFireStationJson = mapper.writeValueAsString(tempFireStation);
+
+		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
+				.put("/fireStation?fireStationAdress=1509 Culver St")
+				.content(tempFireStationJson)
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isAccepted())
+				.andReturn();
 	}
 
 }

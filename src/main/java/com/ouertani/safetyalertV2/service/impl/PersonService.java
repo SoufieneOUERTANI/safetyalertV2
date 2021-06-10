@@ -7,11 +7,11 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.ouertani.safetyalertV2.constants.Constants;
 import com.ouertani.safetyalertV2.model.Mapping;
 import com.ouertani.safetyalertV2.model.Person;
 import com.ouertani.safetyalertV2.service.IMappingService;
@@ -24,6 +24,9 @@ import lombok.NoArgsConstructor;
 @Data
 @Service
 public class PersonService implements IPersonService {
+
+	@Value("${JSON_FILE}")
+	private String JSON_FILE;
 
 	private static final Logger logger = LogManager.getLogger("FireStationService");
 
@@ -57,7 +60,7 @@ public class PersonService implements IPersonService {
 			throws JsonGenerationException, JsonMappingException, IOException {
 		logger.info("Paramètre " + "/ idAdress : " + idAdress);
 		List<Person> tempReturn = new ArrayList<Person>();
-		Mapping tempMapping = mappingService.readJsonFile(Constants.JSON_FILE);
+		Mapping tempMapping = mappingService.readJsonFile(JSON_FILE);
 		logger.debug("tempMapping : " + tempMapping);
 		for (Person tempPerson : tempMapping.getPersons()) {
 			logger.debug("tempPerson : " + tempPerson);

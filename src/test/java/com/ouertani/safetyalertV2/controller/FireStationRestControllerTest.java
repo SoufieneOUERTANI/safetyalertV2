@@ -55,7 +55,7 @@ class FireStationRestControllerTest {
 	 * @throws Exception
 	 */
 	@Test
-	final void testGetFireStation() throws Exception {
+	final void testGetFireStation_Mock_fireStationNumber_2_isFound() throws Exception {
 
 		when(fireStationService.getAdressFireStation(anyString())).thenReturn(Arrays.asList("Adress1", "Adress2"));
 
@@ -80,7 +80,7 @@ class FireStationRestControllerTest {
 				// .content(Util.asJsonString(new Adress(0, "Adress_01", null)))
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk())
+				.andExpect(status().isFound())
 				.andExpect(jsonPath("$.childNum").exists())
 				.andExpect(jsonPath("$.childNum").value("2"))
 				.andExpect(jsonPath("$.adultNum").exists())
