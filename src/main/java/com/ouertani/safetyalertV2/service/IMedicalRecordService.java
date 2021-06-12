@@ -8,11 +8,14 @@ import com.ouertani.safetyalertV2.model.MedicalRecord;
 
 public interface IMedicalRecordService {
 
-	MedicalRecord addMedicalRecord(MedicalRecord medicalRecord);
+	MedicalRecord addMedicalRecord(MedicalRecord medicalRecord)
+			throws JsonGenerationException, JsonMappingException, IOException;
 
-	MedicalRecord putMedicalRecord(MedicalRecord medicalRecord);
+	MedicalRecord putMedicalRecord(MedicalRecord medicalRecord)
+			throws JsonGenerationException, JsonMappingException, IOException;
 
-	boolean deleteMedicalRecord(String firstName, String lastName);
+	MedicalRecord deleteMedicalRecord(String firstName, String lastName)
+			throws JsonGenerationException, JsonMappingException, IOException;
 
 	// ---
 

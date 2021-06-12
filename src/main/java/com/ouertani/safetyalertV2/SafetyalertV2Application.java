@@ -7,16 +7,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.ouertani.safetyalertV2.service.IMappingService;
-import com.ouertani.safetyalertV2.service.impl.MappingService;
-
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @SpringBootApplication
-@EnableSwagger2
+//@EnableSwagger2
 public class SafetyalertV2Application {
-
-	static IMappingService mappingService = new MappingService();
 
 	public static void main(String[] args) throws JsonGenerationException, JsonMappingException, IOException {
 		SpringApplication.run(SafetyalertV2Application.class, args);

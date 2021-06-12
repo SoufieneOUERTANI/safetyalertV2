@@ -4,22 +4,20 @@ import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.ouertani.safetyalertV2.dto.FileJsonMapping;
-import com.ouertani.safetyalertV2.model.Mapping;
 import com.ouertani.safetyalertV2.model.MedicalRecord;
-import com.ouertani.safetyalertV2.service.IMappingService;
 import com.ouertani.safetyalertV2.service.IMedicalRecordService;
-import com.ouertani.safetyalertV2.service.impl.MappingService;
 
 @RestController
 public class MedicalRecordRestController {
@@ -34,69 +32,46 @@ public class MedicalRecordRestController {
 		medicalRecordService = theMedicalRecordService;
 	}
 
-	/*
-	 * @GetMapping("/medicalRecords") public List<MedicalRecord> getMedicalRecords()
-	 * { return (List<MedicalRecord>) medicalRecordService.getMedicalRecords(); }
-	 */
-
-	/*
-	 * @GetMapping("/medicalRecords/{medicalRecordId}") public
-	 * Optional<MedicalRecord> getMedicalRecord(@PathVariable long medicalRecordId)
-	 * {
-	 * 
-	 * Optional<MedicalRecord> theMedicalRecord =
-	 * medicalRecordService.getMedicalRecord(medicalRecordId);
-	 * 
-	 * if (theMedicalRecord == null) { throw new
-	 * RuntimeException("MedicalRecord id not found - " + medicalRecordId); }
-	 * 
-	 * return theMedicalRecord; }
-	 */
-
-	@GetMapping("/")
-	public Mapping global() throws JsonGenerationException, JsonMappingException, IOException {
-
-		IMappingService mappingService = new MappingService();
-		return FileJsonMapping.mapping = mappingService.readJsonFile(JSON_FILE);
-
-	}
-
 	@PostMapping("/medicalRecord")
-	public MedicalRecord addMedicalRecord(@RequestBody MedicalRecord theMedicalRecord) {
+	@ResponseStatus(code = HttpStatus.CREATED)
+	public MedicalRecord addMedicalRecord(@RequestBody MedicalRecord theMedicalRecord)
+			throws JsonGenerationException, JsonMappingException, IOException {
 
 		MedicalRecord tempMedicalRecord = medicalRecordService.addMedicalRecord(theMedicalRecord);
 		if (tempMedicalRecord == null) {
-			throw new RuntimeException("Impossible to add the medicalRecord - " + theMedicalRecord.getFirstName()
-					+ " - " + theMedicalRecord.getLastName());
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Impossible to add the medicalRecord - " + theMedicalRecord.getFirstName() + " - "
+							+ theMedicalRecord.getLastName());
 		}
-		return (medicalRecordService.addMedicalRecord(theMedicalRecord));
+		return (tempMedicalRecord);
 	}
 
-	// add mapping for PUT /medicalRecords - update existing medicalRecord
-
 	@PutMapping("/medicalRecord")
-	public MedicalRecord updateMedicalRecord(@RequestBody MedicalRecord theMedicalRecord) {
+	@ResponseStatus(code = HttpStatus.ACCEPTED)
+	public MedicalRecord updateMedicalRecord(@RequestBody MedicalRecord theMedicalRecord)
+			throws JsonGenerationException, JsonMappingException, IOException {
 
 		MedicalRecord tempMedicalRecord = medicalRecordService.putMedicalRecord(theMedicalRecord);
 		if (tempMedicalRecord == null) {
-			throw new RuntimeException("Impossible to update the medicalRecord - " + theMedicalRecord.getFirstName()
-					+ " - " + theMedicalRecord.getLastName());
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+					"Custom Error : Impossible to update the medicalRecord - "
+							+ theMedicalRecord.getFirstName() + " - " + theMedicalRecord.getLastName());
 		}
 		return theMedicalRecord;
 	}
 
-	// add mapping for DELETE /medicalRecords/{medicalRecordId} - delete
-	// medicalRecord
-
 	@DeleteMapping("/medicalRecord")
+	@ResponseStatus(code = HttpStatus.ACCEPTED)
 	public String deleteMedicalRecord(@RequestParam(defaultValue = "empty") String firstName,
-			@RequestParam(defaultValue = "empty") String lastName) {
-		if (firstName == "empty" || lastName == "empty")
+			@RequestParam(defaultValue = "empty") String lastName)
+			throws JsonGenerationException, JsonMappingException, IOException {
+		if (firstName.equals("empty") || lastName.equals("empty"))
 			return "Please give a \"firstName\" and a \"lastName\"";
 
-		boolean tempMedicalRecord = medicalRecordService.deleteMedicalRecord(firstName, lastName);
-		if (tempMedicalRecord == false) {
-			throw new RuntimeException("MedicalRecord not found - " + firstName + " - " + lastName);
+		MedicalRecord tempMedicalRecord = medicalRecordService.deleteMedicalRecord(firstName, lastName);
+		if (tempMedicalRecord == null) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+					"MedicalRecord not found - " + firstName + " - " + lastName);
 		}
 		return "Deleted medicalRecord id - " + firstName + " - " + lastName;
 	}

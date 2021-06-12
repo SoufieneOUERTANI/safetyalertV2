@@ -44,10 +44,10 @@ import lombok.NoArgsConstructor;
 @RestController
 public class FireStationRestController {
 
+	private static final Logger logger = LogManager.getLogger("FireStationRestController");
+
 	@Value("${spring.jackson.date-format}")
 	private String DATE_FORMAT;
-
-	private static final Logger logger = LogManager.getLogger("FireStationRestController");
 
 	private IFireStationService fireStationService;
 	private IPersonService personService;
@@ -65,12 +65,10 @@ public class FireStationRestController {
 	@ResponseStatus(code = HttpStatus.CREATED)
 	public FireStation addFireStation(@RequestBody FireStation theFireStation)
 			throws JsonGenerationException, JsonMappingException, IOException {
-
-		FireStation tempFireStation = fireStationService.addFireStation(theFireStation);
-		if (tempFireStation == null) {
-			throw new RuntimeException("Impossible to add the fireStation - " + theFireStation.getAddress() + " - "
-					+ theFireStation.getStation());
+		if (theFireStation == null) {
+			throw new RuntimeException("Impossible to add the null fireStation ");
 		}
+		FireStation tempFireStation = fireStationService.addFireStation(theFireStation);
 		return (tempFireStation);
 	}
 
@@ -81,8 +79,9 @@ public class FireStationRestController {
 
 		FireStation tempFireStation = fireStationService.putFireStation(theFireStation);
 		if (tempFireStation == null) {
-			throw new RuntimeException("Impossible to update the fireStation - " + theFireStation.getAddress() + " - "
-					+ theFireStation.getStation());
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+					"Impossible to update the fireStation - " + theFireStation.getAddress() + " - "
+							+ theFireStation.getStation());
 		}
 		return theFireStation;
 	}
@@ -109,8 +108,8 @@ public class FireStationRestController {
 
 		if (tempFireStation.size() == 0) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-					"FireStation not found - " + ((fireStationAdress == "empty") ? "" : fireStationAdress) + " - "
-							+ ((fireStationNumber == "empty") ? "" : fireStationNumber));
+					"FireStation not found - " + ((fireStationAdress.equals("empty")) ? "" : fireStationAdress) + " - "
+							+ ((fireStationNumber.equals("empty")) ? "" : fireStationNumber));
 		}
 		return ("Deleted fireStations - " + tempFireStation.toString());
 	}
@@ -154,7 +153,7 @@ public class FireStationRestController {
 			logger.error(
 					"Pour la requête GET il faut saisir un paramètre 'fireStationNumber'. Liste des paramètres saisis : "
 							+ allParams.toString());
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
 					"Pour la requête GET il faut saisir un paramètre 'fireStationNumber'. Liste des paramètres saisis : "
 							+ allParams.toString());
 		}
@@ -179,7 +178,7 @@ public class FireStationRestController {
 			logger.warn(
 					"Request " + Request + " sur l'URI " + URI + " : avec les paramètres : " + parameters.toString()
 							+ " Exception : " + exc.toString());
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Custom Error : Non numeric request parameter",
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Custom Error : Non numeric request parameter",
 					exc);
 		}
 

@@ -9,19 +9,21 @@ import com.ouertani.safetyalertV2.model.Person;
 
 public interface IPersonService {
 
-	Person addPerson(Person person);
+	Person addPerson(Person person) throws JsonGenerationException, JsonMappingException, IOException;
 
-	Person putPerson(Person person);
+	Person putPerson(Person person) throws JsonGenerationException, JsonMappingException, IOException;
 
-	boolean deletePerson(String firstName, String lastName);
+	Person deletePerson(String firstName, String lastName)
+			throws JsonGenerationException, JsonMappingException, IOException;
 
 	// ---
 
 	List<Person> getPersonAdress(String idAdress) throws JsonGenerationException, JsonMappingException, IOException;
 
-	Person getPerson(String firstName, String lastName);
+	Person getPerson(String firstName, String lastName)
+			throws JsonGenerationException, JsonMappingException, IOException;
 
-	List<Person> getPersonCity(String city);
+	List<Person> getPersonCity(String city) throws JsonGenerationException, JsonMappingException, IOException;
 
 	// ---
 

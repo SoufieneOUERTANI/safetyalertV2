@@ -77,7 +77,6 @@ class FireStationRestControllerTest {
 		MvcResult mvcResult;
 		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
 				.get("/fireStation?fireStationNumber=2")
-				// .content(Util.asJsonString(new Adress(0, "Adress_01", null)))
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isFound())
@@ -124,4 +123,16 @@ class FireStationRestControllerTest {
 
 	}
 
+	@Test
+	final void testGetFireStation_Mock_badParameter_isBadRequest() throws Exception {
+
+		MvcResult mvcResult;
+		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
+				.get("/fireStation?FalseParam=2")
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andReturn();
+
+	}
 }
