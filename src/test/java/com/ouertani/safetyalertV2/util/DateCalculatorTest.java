@@ -36,7 +36,7 @@ class DateCalculatorTest {
 		LocalDate localDate;
 		String birhtDate;
 
-		localDate = LocalDate.parse("2018-11-14");
+		localDate = LocalDate.parse("2017-12-15");
 		birhtDate = "2000-11-15";
 		assertEquals(17, DateCalculator.ageCalculYears(birhtDate, localDate, DATE_FORMAT));
 

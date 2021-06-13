@@ -8,8 +8,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
+
 @SpringBootApplication
-//@EnableSwagger2
+@EnableSwagger2
 public class SafetyalertV2Application {
 
 	public static void main(String[] args) throws JsonGenerationException, JsonMappingException, IOException {

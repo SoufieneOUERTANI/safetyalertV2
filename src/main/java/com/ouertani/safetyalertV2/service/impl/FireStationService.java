@@ -85,8 +85,19 @@ public class FireStationService implements IFireStationService {
 	}
 
 	@Override
-	public FireStation getFireStationAdress(String addressFireStation) {
-		// TODO Auto-generated method stub
+	public String getFireStationAdress(String addressFireStation)
+			throws JsonGenerationException, JsonMappingException, IOException {
+		logger.info("Paramètre : " + "/ addressFireStation : " + addressFireStation);
+
+		Mapping tempMapping = mappingService.readJsonFile(JSON_FILE);
+		logger.debug("tempMapping : " + tempMapping);
+		for (FireStation tempFireStation : tempMapping.getFirestations()) {
+			logger.debug("tempFireStation : " + tempFireStation);
+			if (tempFireStation.getAddress().equals(addressFireStation)) {
+				logger.debug("tempFireStation pris en compte : " + tempFireStation);
+				return tempFireStation.getStation();
+			}
+		}
 		return null;
 	}
 

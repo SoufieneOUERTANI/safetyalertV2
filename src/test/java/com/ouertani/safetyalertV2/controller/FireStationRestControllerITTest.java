@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,6 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ouertani.safetyalertV2.dto.FileJsonMapping;
 import com.ouertani.safetyalertV2.dto.GetFireStationClassReturn;
@@ -102,7 +104,7 @@ class FireStationRestControllerITTest {
 //	}
 
 	@Test
-	final void testGetFireStation_fireStationNumber_2_isFound() throws Exception {
+	final void testGetFireStation_stationNumber_2_isFound() throws Exception {
 
 		FileJsonMapping.mapping = mappingService.readJsonFile(JSON_FILE);
 
@@ -111,7 +113,7 @@ class FireStationRestControllerITTest {
 		ObjectMapper mapper = new ObjectMapper();
 
 		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
-				.get("/fireStation?fireStationNumber=2")
+				.get("/firestation?stationNumber=2")
 				// .content(Util.asJsonString(new Adress(0, "Adress_01", null)))
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
@@ -176,7 +178,7 @@ class FireStationRestControllerITTest {
 	}
 
 	@Test
-	final void testGetFireStation_fireStationNumber_C_BadRequest() throws Exception {
+	final void testGetFireStation_stationNumber_C_BadRequest() throws Exception {
 
 		FileJsonMapping.mapping = mappingService.readJsonFile(JSON_FILE);
 
@@ -185,7 +187,7 @@ class FireStationRestControllerITTest {
 		ObjectMapper mapper = new ObjectMapper();
 
 		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
-				.get("/fireStation?fireStationNumber=C")
+				.get("/firestation?stationNumber=C")
 				// .content(Util.asJsonString(new Adress(0, "Adress_01", null)))
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
@@ -207,7 +209,7 @@ class FireStationRestControllerITTest {
 		String tempFireStationJson = mapper.writeValueAsString(tempFireStation);
 
 		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
-				.post("/fireStation")
+				.post("/firestation")
 				.content(tempFireStationJson)
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
@@ -235,7 +237,7 @@ class FireStationRestControllerITTest {
 		String tempFireStationJson = mapper.writeValueAsString(tempFireStation);
 
 		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
-				.post("/fireStation")
+				.post("/firestation")
 				.content(tempFireStationJson)
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
@@ -263,7 +265,7 @@ class FireStationRestControllerITTest {
 		String tempFireStationJson = mapper.writeValueAsString(tempFireStation);
 
 		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
-				.delete("/fireStation")
+				.delete("/firestation")
 				.content(tempFireStationJson)
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
@@ -283,7 +285,7 @@ class FireStationRestControllerITTest {
 		String tempFireStationJson = mapper.writeValueAsString(tempFireStation);
 
 		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
-				.delete("/fireStation?fireStationAdress=1509 Culver St&fireStationNumber=3")
+				.delete("/firestation?fireStationAdress=1509 Culver St&fireStationNumber=3")
 				.content(tempFireStationJson)
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
@@ -303,7 +305,7 @@ class FireStationRestControllerITTest {
 		String tempFireStationJson = mapper.writeValueAsString(tempFireStation);
 
 		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
-				.delete("/fireStation?fireStationAdress=1509 Culver St___&fireStationNumber=3")
+				.delete("/firestation?fireStationAdress=1509 Culver St___&fireStationNumber=3")
 				.content(tempFireStationJson)
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
@@ -329,7 +331,7 @@ class FireStationRestControllerITTest {
 		String tempFireStationJson = mapper.writeValueAsString(tempFireStation);
 
 		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
-				.delete("/fireStation?fireStationNumber=3")
+				.delete("/firestation?stationNumber=3")
 				.content(tempFireStationJson)
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
@@ -364,7 +366,7 @@ class FireStationRestControllerITTest {
 		assertEquals(mappingService.readJsonFile(JSON_FILE).getFirestations().contains(tempFireStation), true);
 
 		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
-				.delete("/fireStation?fireStationAdress=1509 Culver St")
+				.delete("/firestation?fireStationAdress=1509 Culver St")
 				.content(tempFireStationJson)
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
@@ -399,7 +401,7 @@ class FireStationRestControllerITTest {
 		assertEquals(mappingService.readJsonFile(JSON_FILE).getFirestations().contains(tempFireStation), false);
 
 		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
-				.put("/fireStation?fireStationAdress=1509 Culver St")
+				.put("/firestation?fireStationAdress=1509 Culver St")
 				.content(tempFireStationJson)
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
@@ -423,12 +425,52 @@ class FireStationRestControllerITTest {
 		String tempFireStationJson = mapper.writeValueAsString(tempFireStation);
 
 		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
-				.put("/fireStation?fireStationAdress=1509 Culver St")
+				.put("/firestation?fireStationAdress=1509 Culver St")
 				.content(tempFireStationJson)
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isNotFound())
 				.andReturn();
+	}
+
+	@Test
+	final void testgetPersonsPhoneFireStation_isFound() throws Exception {
+		MvcResult mvcResult;
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
+				.get("/phoneAlert?firestation=2")
+				// .content()
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isFound())
+				.andReturn();
+
+		List<String> readValue = mapper.readValue(mvcResult.getResponse().getContentAsString(),
+				new TypeReference<List<String>>() {
+				});
+		assertEquals(4, readValue.size());
+		assertEquals(true, readValue.contains("841-874-7458"));
+		assertEquals(true, readValue.contains("841-874-7878"));
+		assertEquals(true, readValue.contains("841-874-7512"));
+		assertEquals(true, readValue.contains("841-874-7458"));
+	}
+
+	@Test
+	final void testgetPersonsPhoneFireStation_13_isNotFound() throws Exception {
+		MvcResult mvcResult;
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
+				.get("/phoneAlert?firestation=13")
+				// .content()
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNotFound())
+				.andReturn();
+
 	}
 
 }

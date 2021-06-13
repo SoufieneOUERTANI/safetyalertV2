@@ -22,9 +22,7 @@ import com.ouertani.safetyalertV2.service.IMappingService;
 import com.ouertani.safetyalertV2.service.IPersonService;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
 @Data
 @Service
 public class PersonService implements IPersonService {

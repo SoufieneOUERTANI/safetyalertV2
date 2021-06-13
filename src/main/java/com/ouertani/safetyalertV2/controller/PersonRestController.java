@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,8 +25,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.ouertani.safetyalertV2.dto.MedicalDetailsPersonsAdress;
 import com.ouertani.safetyalertV2.model.MedicalRecord;
 import com.ouertani.safetyalertV2.model.Person;
+import com.ouertani.safetyalertV2.service.IFireStationService;
 import com.ouertani.safetyalertV2.service.IMedicalRecordService;
 import com.ouertani.safetyalertV2.service.IPersonService;
 import com.ouertani.safetyalertV2.util.DateCalculator;
@@ -40,11 +43,15 @@ public class PersonRestController {
 
 	private IPersonService personService;
 	private IMedicalRecordService medicalRecordService;
+	private IFireStationService fireStationService;
 
 	@Autowired
-	public PersonRestController(IPersonService thePersonService, IMedicalRecordService theMedicalRecordService) {
+	public PersonRestController(IPersonService thePersonService, IMedicalRecordService theMedicalRecordService,
+			IFireStationService theFireStationService) {
 		personService = thePersonService;
 		medicalRecordService = theMedicalRecordService;
+		fireStationService = theFireStationService;
+
 	}
 
 	/*
@@ -186,6 +193,101 @@ public class PersonRestController {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucun enfant à cette adresse ");
 		}
 		return chidren;
+	}
+
+	@GetMapping("/fire")
+	@ResponseStatus(code = HttpStatus.FOUND)
+	// http://localhost:8080/fire?address=<address>
+	public List<MedicalDetailsPersonsAdress> getMedicalDetailsPersonsAdress(
+			@RequestParam Map<String, String> allParams)
+			throws JsonGenerationException, JsonMappingException, IOException, ParseException {
+
+		logger.debug("allParams.size() : " + allParams.size());
+		logger.debug("allParams : " + allParams.toString());
+
+		List<MedicalDetailsPersonsAdress> medicalDetailsPersonsAdresses = new ArrayList<MedicalDetailsPersonsAdress>();
+
+		String idAdress = allParams.get("address");
+		if (allParams.size() == 1 && idAdress != null) {
+
+			String idFireStation = fireStationService.getFireStationAdress(idAdress);
+
+			List<Person> tempPersons = personService.getPersonAdress(idAdress);
+			if (tempPersons.size() == 0) {
+				throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+						"Aucun personne à cette adresse");
+			}
+
+			for (Person tempPerson : tempPersons) {
+				MedicalRecord tempMedicalRedord = medicalRecordService.getMedicalRecordPerson(tempPerson.getFirstName(),
+						tempPerson.getLastName());
+				medicalDetailsPersonsAdresses.add(
+						new MedicalDetailsPersonsAdress(
+								idFireStation,
+								tempPerson.getFirstName(),
+								tempPerson.getLastName(),
+								tempPerson.getPhone(),
+								DateCalculator.ageCalculYears(tempMedicalRedord.getBirthdate(),
+										LocalDate.now(),
+										DATE_FORMAT),
+								tempMedicalRedord.getMedications(),
+								tempMedicalRedord.getAllergies()));
+			}
+
+		} else {
+			logger.error(
+					"Pour la requête GET il faut saisir un paramètre 'address'. Liste des paramètres saisis : "
+							+ allParams.toString());
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Pour la requête GET il faut saisir un paramètre 'address'. Liste des paramètres saisis : "
+							+ allParams.toString());
+		}
+		logger.debug("medicalDetailsPersonsAdresses : " + medicalDetailsPersonsAdresses);
+		if (medicalDetailsPersonsAdresses.size() == 0) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucun enfant à cette adresse ");
+		}
+		return medicalDetailsPersonsAdresses;
+	}
+
+	@GetMapping("/communityEmail")
+	@ResponseStatus(code = HttpStatus.FOUND)
+	public List<String> getEmailsCity(
+			@RequestParam Map<String, String> allParams)
+			throws JsonGenerationException, JsonMappingException, IOException, ParseException {
+
+		logger.debug("allParams.size() : " + allParams.size());
+		logger.debug("allParams : " + allParams.toString());
+
+		List<String> listEmails = new ArrayList<String>();
+
+		String idCity = allParams.get("city");
+		if (allParams.size() == 1 && idCity != null) {
+
+			if (personService.getPersonCity(idCity).size() == 0) {
+				throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+						"Aucun personne à cette city");
+			}
+			for (Person tempPerson : personService.getPersonCity(idCity)) {
+				if (tempPerson.getEmail() != null)
+					listEmails.add(tempPerson.getEmail());
+			}
+
+		} else {
+			logger.error(
+					"Pour la requête GET il faut saisir un paramètre 'city'. Liste des paramètres saisis : "
+							+ allParams.toString());
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Pour la requête GET il faut saisir un paramètre 'city'. Liste des paramètres saisis : "
+							+ allParams.toString());
+		}
+		logger.debug("listEmails : " + listEmails);
+		if (listEmails.size() == 0) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucune adresse Email à cette city ");
+		}
+		listEmails = listEmails.stream()
+				.distinct()
+				.collect(Collectors.toList());
+		return listEmails;
 	}
 
 }

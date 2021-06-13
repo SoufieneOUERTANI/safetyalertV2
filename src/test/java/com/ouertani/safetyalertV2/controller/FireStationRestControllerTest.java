@@ -55,7 +55,7 @@ class FireStationRestControllerTest {
 	 * @throws Exception
 	 */
 	@Test
-	final void testGetFireStation_Mock_fireStationNumber_2_isFound() throws Exception {
+	final void testGetFireStation_Mock_stationNumber_2_isFound() throws Exception {
 
 		when(fireStationService.getAdressFireStation(anyString())).thenReturn(Arrays.asList("Adress1", "Adress2"));
 
@@ -76,7 +76,7 @@ class FireStationRestControllerTest {
 
 		MvcResult mvcResult;
 		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
-				.get("/fireStation?fireStationNumber=2")
+				.get("/firestation?stationNumber=2")
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isFound())
@@ -128,7 +128,7 @@ class FireStationRestControllerTest {
 
 		MvcResult mvcResult;
 		mvcResult = fireStationRestControllerMockMvc.perform(MockMvcRequestBuilders
-				.get("/fireStation?FalseParam=2")
+				.get("/firestation?FalseParam=2")
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest())

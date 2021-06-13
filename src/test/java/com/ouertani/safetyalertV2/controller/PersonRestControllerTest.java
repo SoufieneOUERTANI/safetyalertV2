@@ -1,5 +1,6 @@
 package com.ouertani.safetyalertV2.controller;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -8,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,6 +33,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ouertani.safetyalertV2.dto.MedicalDetailsPersonsAdress;
 import com.ouertani.safetyalertV2.model.ID;
 import com.ouertani.safetyalertV2.model.Person;
 import com.ouertani.safetyalertV2.service.IMappingService;
@@ -254,7 +257,7 @@ public class PersonRestControllerTest {
 				// .andExpect(jsonPath("$.personnes").exists())
 				.andReturn();
 
-		logger.debug("SOUE77 : " + mvcResult.getResponse().getContentAsString());
+		logger.debug("mvcResult.getResponse().getContentAsString() : " + mvcResult.getResponse().getContentAsString());
 		List<Person> readValue = mapper.readValue(mvcResult.getResponse().getContentAsString(),
 				new TypeReference<List<Person>>() {
 				});
@@ -334,6 +337,138 @@ public class PersonRestControllerTest {
 
 		mvcResult = personRestControllerMockMvc.perform(MockMvcRequestBuilders
 				.get("/childAlert?address=908 73rd St")
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNotFound())
+				// .andExpect(jsonPath("$.personnes").exists())
+				.andReturn();
+
+	}
+
+	@Test
+	// http://localhost:8080/fire?address=<address>
+	final void testGetMedicalDetailsPersonsAdress_WithRightParametersValues_isFound() throws Exception {
+
+		MvcResult mvcResult;
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		mvcResult = personRestControllerMockMvc.perform(MockMvcRequestBuilders
+				.get("/fire?address=1509 Culver St")
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isFound())
+				// .andExpect(jsonPath("$.personnes").exists())
+				.andReturn();
+
+		List<MedicalDetailsPersonsAdress> readValue = mapper.readValue(mvcResult.getResponse().getContentAsString(),
+				new TypeReference<List<MedicalDetailsPersonsAdress>>() {
+				});
+		logger.debug("SOUE77 : " + readValue);
+
+		assertEquals(readValue.size(), 5);
+
+		// On vérifiera que 2 valeurs, on peut compléter par la suite
+		assertTrue(readValue.contains(new MedicalDetailsPersonsAdress("3", "John", "Boyd", "841-874-6512", 37,
+				Arrays.asList("aznol:350mg", "hydrapermazol:100mg"), java.util.Arrays.asList("nillacilan"))));
+		assertTrue(readValue.contains(new MedicalDetailsPersonsAdress("3", "Felicia", "Boyd", "841-874-6544", 35,
+				Arrays.asList("tetracyclaz:650mg"), java.util.Arrays.asList("xilliathal"))));
+
+	}
+
+	@Test
+	final void testGetMedicalDetailsPersonsAdress_WithBadParameters_isBadRequest() throws Exception {
+
+		MvcResult mvcResult;
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		mvcResult = personRestControllerMockMvc.perform(MockMvcRequestBuilders
+				.get("/fire?badParameter=1509 Culver St")
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				// .andExpect(jsonPath("$.personnes").exists())
+				.andReturn();
+
+	}
+
+	@Test
+	final void testGetMedicalDetailsPersonsAdress_WithBadParametersValues_isNotFound() throws Exception {
+
+		MvcResult mvcResult;
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		mvcResult = personRestControllerMockMvc.perform(MockMvcRequestBuilders
+				.get("/fire?address=1509 Culver St___")
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNotFound())
+				// .andExpect(jsonPath("$.personnes").exists())
+				.andReturn();
+
+	}
+
+	@Test
+	// http://localhost:8080/communityEmail?city=<city>
+	final void testGetEmailsCity_WithRightParametersValues_isFound() throws Exception {
+
+		MvcResult mvcResult;
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		mvcResult = personRestControllerMockMvc.perform(MockMvcRequestBuilders
+				.get("/communityEmail?city=Culver")
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isFound())
+				// .andExpect(jsonPath("$.personnes").exists())
+				.andReturn();
+
+		List<String> readValue = mapper.readValue(mvcResult.getResponse().getContentAsString(),
+				new TypeReference<List<String>>() {
+				});
+		logger.debug("SOUE77 : " + readValue);
+
+		assertEquals(15, readValue.size());
+
+		assertTrue(readValue.contains("aly@imail.com"));
+		assertTrue(readValue.contains("bstel@email.com"));
+		assertTrue(readValue.contains("clivfd@ymail.com"));
+		assertTrue(readValue.contains("drk@email.com"));
+		assertTrue(readValue.contains("gramps@email.com"));
+		assertTrue(readValue.contains("jaboyd@email.com"));
+		assertTrue(readValue.contains("jpeter@email.com"));
+		assertTrue(readValue.contains("lily@email.com"));
+		assertTrue(readValue.contains("reg@email.com"));
+		assertTrue(readValue.contains("soph@email.com"));
+		assertTrue(readValue.contains("ssanw@email.com"));
+		assertTrue(readValue.contains("tcoop@ymail.com"));
+		assertTrue(readValue.contains("tenz@email.com"));
+		assertTrue(readValue.contains("ward@email.com"));
+		assertTrue(readValue.contains("zarc@email.com"));
+
+	}
+
+	@Test
+	final void testGetEmailsCity_WithBadParameters_isBadRequest() throws Exception {
+
+		personRestControllerMockMvc.perform(MockMvcRequestBuilders
+				.get("/communityEmail?badParameter=Culver")
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				// .andExpect(jsonPath("$.personnes").exists())
+				.andReturn();
+
+	}
+
+	@Test
+	final void testGetEmailsCity_WithBadParametersValues_isNotFound() throws Exception {
+
+		personRestControllerMockMvc.perform(MockMvcRequestBuilders
+				.get("/communityEmail?city=1509 Culver St___")
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isNotFound())

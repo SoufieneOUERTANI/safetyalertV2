@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,11 +37,6 @@ import com.ouertani.safetyalertV2.service.IFireStationService;
 import com.ouertani.safetyalertV2.service.IMedicalRecordService;
 import com.ouertani.safetyalertV2.service.IPersonService;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@NoArgsConstructor
-@Data
 @RestController
 public class FireStationRestController {
 
@@ -61,7 +57,7 @@ public class FireStationRestController {
 		medicalRecordService = theMedicalRecordService;
 	}
 
-	@PostMapping("/fireStation")
+	@PostMapping("/firestation")
 	@ResponseStatus(code = HttpStatus.CREATED)
 	public FireStation addFireStation(@RequestBody FireStation theFireStation)
 			throws JsonGenerationException, JsonMappingException, IOException {
@@ -72,7 +68,7 @@ public class FireStationRestController {
 		return (tempFireStation);
 	}
 
-	@PutMapping("/fireStation")
+	@PutMapping("/firestation")
 	@ResponseStatus(code = HttpStatus.ACCEPTED)
 	public FireStation updateFireStation(@RequestBody FireStation theFireStation)
 			throws JsonGenerationException, JsonMappingException, IOException {
@@ -86,30 +82,35 @@ public class FireStationRestController {
 		return theFireStation;
 	}
 
-	@DeleteMapping("/fireStation")
+	@DeleteMapping("/firestation")
 	@ResponseStatus(code = HttpStatus.ACCEPTED)
 	public String deleteFireStation(@RequestParam(defaultValue = "empty") String fireStationAdress,
-			@RequestParam(defaultValue = "empty") String fireStationNumber)
+			@RequestParam(defaultValue = "empty") String stationNumber)
 			throws JsonGenerationException, JsonMappingException, IOException {
 
-		logger.info(fireStationAdress + "/" + fireStationNumber);
+		logger.info(fireStationAdress + "/" + stationNumber);
 
-		if (fireStationAdress.equals("empty") && fireStationNumber.equals("empty"))
+		if (fireStationAdress.equals("empty") && stationNumber.equals("empty"))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-					"Pour la requête DELETE merci de saisir l'un des deux paramètres fireStationAdress ou fireStationNumber");
+					"Pour la requête DELETE merci de saisir l'un des deux paramètres fireStationAdress ou stationNumber");
 
 		List<FireStation> tempFireStation = new ArrayList<FireStation>();
-		if (!fireStationAdress.equals("empty") && fireStationNumber.equals("empty"))
+		if (!fireStationAdress.equals("empty") && stationNumber.equals("empty"))
 			tempFireStation = fireStationService.deleteFireStationAdress(fireStationAdress);
-		if (!fireStationNumber.equals("empty") && fireStationAdress.equals("empty"))
-			tempFireStation = fireStationService.deleteFireStationStation(fireStationNumber);
-		if (!fireStationNumber.equals("empty") && !fireStationAdress.equals("empty"))
-			tempFireStation = fireStationService.deleteFireStation(fireStationAdress, fireStationNumber);
+		if (!stationNumber.equals("empty") && fireStationAdress.equals("empty"))
+			tempFireStation = fireStationService.deleteFireStationStation(stationNumber);
+		if (!stationNumber.equals("empty") && !fireStationAdress.equals("empty"))
+			tempFireStation = fireStationService.deleteFireStation(fireStationAdress, stationNumber);
 
+		if (tempFireStation == null) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+					"FireStation not found - " + ((fireStationAdress.equals("empty")) ? "" : fireStationAdress) + " - "
+							+ ((stationNumber.equals("empty")) ? "" : stationNumber));
+		}
 		if (tempFireStation.size() == 0) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND,
 					"FireStation not found - " + ((fireStationAdress.equals("empty")) ? "" : fireStationAdress) + " - "
-							+ ((fireStationNumber.equals("empty")) ? "" : fireStationNumber));
+							+ ((stationNumber.equals("empty")) ? "" : stationNumber));
 		}
 		return ("Deleted fireStations - " + tempFireStation.toString());
 	}
@@ -132,13 +133,13 @@ public class FireStationRestController {
 	 * adresse ; ● supprimer le mapping d'une caserne ou d'une adresse.
 	 */
 
-//	@GetMapping("/fireStation")
+//	@GetMapping("/firestation")
 //	public GetFireStationClassReturn getFireStation(
 //			@RequestParam(
 //					// defaultValue = "empty",
 //					required = false) String fireStationNumber)
 
-	@GetMapping("/fireStation")
+	@GetMapping("/firestation")
 	@ResponseStatus(code = HttpStatus.FOUND)
 	public GetFireStationClassReturn getFireStation(
 			@RequestParam Map<String, String> allParams) {
@@ -146,9 +147,9 @@ public class FireStationRestController {
 		logger.debug("allParams.size() : " + allParams.size());
 		logger.debug("allParams : " + allParams.toString());
 
-		String fireStationNumber = allParams.get("fireStationNumber");
-		if (allParams.size() == 1 && fireStationNumber != null) {
-			return getFireStationFireStationNumber(fireStationNumber);
+		String stationNumber = allParams.get("stationNumber");
+		if (allParams.size() == 1 && stationNumber != null) {
+			return getFireStationFireStationNumber(stationNumber);
 		} else {
 			logger.error(
 					"Pour la requête GET il faut saisir un paramètre 'fireStationNumber'. Liste des paramètres saisis : "
@@ -169,7 +170,7 @@ public class FireStationRestController {
 			throws ResponseStatusException {
 		List<String> parameters = new ArrayList<String>();
 		String Request = "Get";
-		String URI = "/fireStation";
+		String URI = "/firestation";
 		parameters.add("fireStationNumber : " + fireStationNumber);
 
 		try {
@@ -231,4 +232,44 @@ public class FireStationRestController {
 				"Succeeded request " + Request + " sur l'URI " + URI + " : avec les paramètres : " + parameters);
 		return getFireStationClassReturn;
 	}
+
+	@GetMapping("/phoneAlert")
+	@ResponseStatus(code = HttpStatus.FOUND)
+	public List<String> getPersonsPhoneFireStation(
+			@RequestParam Map<String, String> allParams)
+			throws JsonGenerationException, JsonMappingException, IOException {
+
+		logger.debug("allParams.size() : " + allParams.size());
+		logger.debug("allParams : " + allParams.toString());
+
+		List<String> listPhones = new ArrayList<String>();
+
+		String idFirestation = allParams.get("firestation");
+		if (allParams.size() == 1 && idFirestation != null) {
+			List<String> listAdressesFireStation = fireStationService.getAdressFireStation(idFirestation);
+			for (String AdressesFireStation : listAdressesFireStation) {
+				for (Person tempPerson : personService.getPersonAdress(AdressesFireStation)) {
+					if (tempPerson.getPhone() != null)
+						listPhones.add(tempPerson.getPhone());
+				}
+			}
+		} else {
+			logger.error(
+					"Pour la requête GET il faut saisir un paramètre 'phoneAlert'. Liste des paramètres saisis : "
+							+ allParams.toString());
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Pour la requête GET il faut saisir un paramètre 'phoneAlert'. Liste des paramètres saisis : "
+							+ allParams.toString());
+		}
+		if (listPhones.size() != 0) {
+			listPhones = listPhones.stream()
+					.distinct()
+					.collect(Collectors.toList());
+			return listPhones;
+		}
+		throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+				"Aucun numéro de téléphen n'est asscoié à cette adresse : "
+						+ allParams.toString());
+	}
+
 }

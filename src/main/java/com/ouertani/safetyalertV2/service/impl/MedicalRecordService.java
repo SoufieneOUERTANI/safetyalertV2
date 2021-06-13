@@ -20,9 +20,6 @@ import com.ouertani.safetyalertV2.model.MedicalRecord;
 import com.ouertani.safetyalertV2.service.IMappingService;
 import com.ouertani.safetyalertV2.service.IMedicalRecordService;
 
-import lombok.Data;
-
-@Data
 @Service
 public class MedicalRecordService implements IMedicalRecordService {
 

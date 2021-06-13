@@ -32,7 +32,7 @@ public interface IFireStationService {
 	List<String> getAdressFireStation(String idFireStation)
 			throws JsonGenerationException, JsonMappingException, IOException;
 
-	FireStation getFireStationAdress(String Adress);
+	String getFireStationAdress(String Adress) throws JsonGenerationException, JsonMappingException, IOException;
 
 	// ---
 
