@@ -17,5 +17,4 @@ public class SafetyalertV2Application {
 	public static void main(String[] args) throws JsonGenerationException, JsonMappingException, IOException {
 		SpringApplication.run(SafetyalertV2Application.class, args);
 	}
-
 }

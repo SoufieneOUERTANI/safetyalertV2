@@ -26,6 +26,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.ouertani.safetyalertV2.dto.MedicalDetailsPersonsAdress;
+import com.ouertani.safetyalertV2.dto.PersonInfosName;
 import com.ouertani.safetyalertV2.model.MedicalRecord;
 import com.ouertani.safetyalertV2.model.Person;
 import com.ouertani.safetyalertV2.service.IFireStationService;
@@ -288,6 +289,68 @@ public class PersonRestController {
 				.distinct()
 				.collect(Collectors.toList());
 		return listEmails;
+	}
+
+	@GetMapping("/personInfo")
+	@ResponseStatus(code = HttpStatus.FOUND)
+	// http://localhost:9090/personInfo?firstName=<firstName>&lastName=<lastName>
+	public List<PersonInfosName> getPersonInfosName(
+			@RequestParam Map<String, String> allParams)
+			throws JsonGenerationException, JsonMappingException, IOException, ParseException {
+
+		logger.debug("allParams.size() : " + allParams.size());
+		logger.debug("allParams : " + allParams.toString());
+
+		List<PersonInfosName> personInfosNames = new ArrayList<PersonInfosName>();
+
+		String idFirstName = allParams.get("firstName");
+		String idLastName = allParams.get("lastName");
+
+		if (allParams.size() > 0 && idLastName != null) {
+
+			List<Person> tempPersons = personService.getPerson(idFirstName, idLastName);
+
+			if (tempPersons != null) {
+
+				if (tempPersons.size() == 0) {
+					throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+							"Aucun personne avec ce nom");
+				}
+
+				for (Person tempPerson : tempPersons) {
+					MedicalRecord tempMedicalRedord = medicalRecordService.getMedicalRecordPerson(
+							tempPerson.getFirstName(),
+							tempPerson.getLastName());
+					personInfosNames.add(
+							new PersonInfosName(
+									tempPerson.getFirstName(),
+									tempPerson.getLastName(),
+									tempPerson.getAddress(),
+									tempPerson.getEmail(),
+									DateCalculator.ageCalculYears(tempMedicalRedord.getBirthdate(),
+											LocalDate.now(),
+											DATE_FORMAT),
+									tempMedicalRedord.getMedications(),
+									tempMedicalRedord.getAllergies()));
+
+				}
+			}
+		} else {
+			logger.error(
+					"Pour la requête GET il faut saisir un paramètre 'lastName' et 'firstName'. Liste des paramètres saisis : "
+							+ allParams.toString());
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Pour la requête GET il faut saisir un paramètre 'lastName' et 'firstName'. Liste des paramètres saisis : "
+							+ allParams.toString());
+		}
+		if (personInfosNames == null) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucune personne ne correspond");
+		}
+		if (personInfosNames.size() == 0) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucune personne ne correspond");
+		}
+		logger.debug("medicalDetailsPersonsAdresses : " + personInfosNames);
+		return personInfosNames;
 	}
 
 }

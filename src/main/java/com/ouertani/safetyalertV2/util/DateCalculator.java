@@ -7,15 +7,17 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.util.Date;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class DateCalculator {
 
-	public static int ageCalculYears(String birhtDate, LocalDate localDateNow, String DATE_FORMAT)
+	private static final Logger logger = LogManager.getLogger("DateCalculator");
+
+	public static int ageCalculYears(String birthDateString, LocalDate localDateNow, String DATE_FORMAT)
 			throws ParseException {
 		SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
-		Date birthDate = sdf.parse(birhtDate);
-		// Date currentDate = sdf.parse(sdf.format(new Date()));
-		System.out.println(Period
-				.between(birthDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(), localDateNow));
+		Date birthDate = sdf.parse(birthDateString);
 		return Period
 				.between(birthDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(), localDateNow)
 				.getYears();

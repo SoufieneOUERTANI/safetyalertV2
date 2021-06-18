@@ -20,7 +20,7 @@ public interface IPersonService {
 
 	List<Person> getPersonAdress(String idAdress) throws JsonGenerationException, JsonMappingException, IOException;
 
-	Person getPerson(String firstName, String lastName)
+	List<Person> getPerson(String firstName, String lastName)
 			throws JsonGenerationException, JsonMappingException, IOException;
 
 	List<Person> getPersonCity(String city) throws JsonGenerationException, JsonMappingException, IOException;

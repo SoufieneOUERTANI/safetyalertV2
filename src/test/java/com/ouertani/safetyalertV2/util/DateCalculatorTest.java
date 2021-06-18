@@ -31,39 +31,52 @@ class DateCalculatorTest {
 
 	@Test
 	final void testAgeCalcul_17() throws ParseException {
-		String DATE_FORMAT = "yyyy-mm-dd";
+		String DATE_FORMAT = "MM/dd/yyyy";
 
 		LocalDate localDate;
 		String birhtDate;
 
-		localDate = LocalDate.parse("2017-12-15");
-		birhtDate = "2000-11-15";
+		localDate = LocalDate.parse("2018-11-15");
+		birhtDate = "11/16/2000";
 		assertEquals(17, DateCalculator.ageCalculYears(birhtDate, localDate, DATE_FORMAT));
 
 	}
 
 	@Test
 	final void testAgeCalcul_18() throws ParseException {
-		String DATE_FORMAT = "yyyy-mm-dd";
+		String DATE_FORMAT = "MM/dd/yyyy";
 
 		LocalDate localDate;
 		String birhtDate;
 
-		localDate = LocalDate.parse("2018-11-16");
-		birhtDate = "2000-11-15";
+		localDate = LocalDate.parse("2018-12-16");
+		birhtDate = "11/16/2000";
 		assertEquals(18, DateCalculator.ageCalculYears(birhtDate, localDate, DATE_FORMAT));
 
 	}
 
 	@Test
-	final void testAgeCalcul_Exactly_18() throws ParseException {
-		String DATE_FORMAT = "yyyy-mm-dd";
+	final void testAgeCalcul_19() throws ParseException {
+		String DATE_FORMAT = "MM/dd/yyyy";
 
 		LocalDate localDate;
 		String birhtDate;
 
-		localDate = LocalDate.parse("2018-11-15");
-		birhtDate = "2000-11-15";
+		localDate = LocalDate.parse("2019-11-16");
+		birhtDate = "11/16/2000";
+		assertEquals(19, DateCalculator.ageCalculYears(birhtDate, localDate, DATE_FORMAT));
+
+	}
+
+	@Test
+	final void testAgeCalcul_Exactly_18() throws ParseException {
+		String DATE_FORMAT = "MM/dd/yyyy";
+
+		LocalDate localDate;
+		String birhtDate;
+
+		localDate = LocalDate.parse("2018-11-16");
+		birhtDate = "11/16/2000";
 		assertEquals(18, DateCalculator.ageCalculYears(birhtDate, localDate, DATE_FORMAT));
 
 	}

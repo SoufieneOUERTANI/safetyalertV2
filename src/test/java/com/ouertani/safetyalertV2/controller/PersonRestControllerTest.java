@@ -34,6 +34,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ouertani.safetyalertV2.dto.MedicalDetailsPersonsAdress;
+import com.ouertani.safetyalertV2.dto.PersonInfosName;
 import com.ouertani.safetyalertV2.model.ID;
 import com.ouertani.safetyalertV2.model.Person;
 import com.ouertani.safetyalertV2.service.IMappingService;
@@ -469,6 +470,140 @@ public class PersonRestControllerTest {
 
 		personRestControllerMockMvc.perform(MockMvcRequestBuilders
 				.get("/communityEmail?city=1509 Culver St___")
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNotFound())
+				// .andExpect(jsonPath("$.personnes").exists())
+				.andReturn();
+
+	}
+
+	@Test
+	// http://localhost:9090/personInfo?lastName=Zemicks&firstName=Sophia
+	final void testGetPersonInfosName_WithRightParametersValues_isFound() throws Exception {
+
+		MvcResult mvcResult;
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		mvcResult = personRestControllerMockMvc.perform(MockMvcRequestBuilders
+				.get("/personInfo?lastName=Zemicks&firstName=Sophia")
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isFound())
+				// .andExpect(jsonPath("$.personnes").exists())
+				.andReturn();
+
+		List<PersonInfosName> readValue = mapper.readValue(mvcResult.getResponse().getContentAsString(),
+				new TypeReference<List<PersonInfosName>>() {
+				});
+		logger.debug("SOUE77 : " + readValue);
+
+		assertEquals(1, readValue.size());
+
+		assertTrue(readValue.contains(mapper.readValue("    {\r\n"
+				+ "        \"firstName\": \"Sophia\",\r\n"
+				+ "        \"lastName\": \"Zemicks\",\r\n"
+				+ "        \"address\": \"892 Downing Ct\",\r\n"
+				+ "        \"email\": \"soph@email.com\",\r\n"
+				+ "        \"age\": 33,\r\n"
+				+ "        \"medications\": [\r\n"
+				+ "            \"aznol:60mg\",\r\n"
+				+ "            \"hydrapermazol:900mg\",\r\n"
+				+ "            \"pharmacol:5000mg\",\r\n"
+				+ "            \"terazine:500mg\"\r\n"
+				+ "        ],\r\n"
+				+ "        \"allergies\": [\r\n"
+				+ "            \"peanut\",\r\n"
+				+ "            \"shellfish\",\r\n"
+				+ "            \"aznol\"\r\n"
+				+ "        ]\r\n"
+				+ "    }", PersonInfosName.class)));
+
+	}
+
+	@Test
+	// http://localhost:9090/personInfo?lastName=Zemicks&firstName=Sophia
+	final void testGetPersonInfosName_OtherWithRightParametersValues_isFound() throws Exception {
+
+		MvcResult mvcResult;
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		mvcResult = personRestControllerMockMvc.perform(MockMvcRequestBuilders
+				.get("/personInfo?lastName=Zemicks")
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isFound())
+				// .andExpect(jsonPath("$.personnes").exists())
+				.andReturn();
+
+		List<PersonInfosName> readValue = mapper.readValue(mvcResult.getResponse().getContentAsString(),
+				new TypeReference<List<PersonInfosName>>() {
+				});
+		logger.debug("SOUE77 : " + readValue);
+
+		assertEquals(3, readValue.size());
+
+		assertTrue(readValue.contains(mapper.readValue("    {\r\n"
+				+ "        \"firstName\": \"Sophia\",\r\n"
+				+ "        \"lastName\": \"Zemicks\",\r\n"
+				+ "        \"address\": \"892 Downing Ct\",\r\n"
+				+ "        \"email\": \"soph@email.com\",\r\n"
+				+ "        \"age\": 33,\r\n"
+				+ "        \"medications\": [\r\n"
+				+ "            \"aznol:60mg\",\r\n"
+				+ "            \"hydrapermazol:900mg\",\r\n"
+				+ "            \"pharmacol:5000mg\",\r\n"
+				+ "            \"terazine:500mg\"\r\n"
+				+ "        ],\r\n"
+				+ "        \"allergies\": [\r\n"
+				+ "            \"peanut\",\r\n"
+				+ "            \"shellfish\",\r\n"
+				+ "            \"aznol\"\r\n"
+				+ "        ]\r\n"
+				+ "    }", PersonInfosName.class)));
+
+		assertTrue(readValue.contains(mapper.readValue("   {\r\n"
+				+ "        \"firstName\": \"Warren\",\r\n"
+				+ "        \"lastName\": \"Zemicks\",\r\n"
+				+ "        \"address\": \"892 Downing Ct\",\r\n"
+				+ "        \"email\": \"ward@email.com\",\r\n"
+				+ "        \"age\": 36,\r\n"
+				+ "        \"medications\": [],\r\n"
+				+ "        \"allergies\": []\r\n"
+				+ "    }", PersonInfosName.class)));
+
+		assertTrue(readValue.contains(mapper.readValue("    {\r\n"
+				+ "        \"firstName\": \"Zach\",\r\n"
+				+ "        \"lastName\": \"Zemicks\",\r\n"
+				+ "        \"address\": \"892 Downing Ct\",\r\n"
+				+ "        \"email\": \"zarc@email.com\",\r\n"
+				+ "        \"age\": 4,\r\n"
+				+ "        \"medications\": [],\r\n"
+				+ "        \"allergies\": []\r\n"
+				+ "    }", PersonInfosName.class)));
+
+	}
+
+	@Test
+	final void testGetPersonInfosName_WithBadParameters_isBadRequest() throws Exception {
+
+		personRestControllerMockMvc.perform(MockMvcRequestBuilders
+				.get("/personInfo?badParameter=Zemicks")
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				// .andExpect(jsonPath("$.personnes").exists())
+				.andReturn();
+
+	}
+
+	@Test
+	final void testGetPersonInfosName_WithBadParametersValues_isNotFound() throws Exception {
+
+		personRestControllerMockMvc.perform(MockMvcRequestBuilders
+				.get("/personInfo?lastName==1509 Culver St___")
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isNotFound())

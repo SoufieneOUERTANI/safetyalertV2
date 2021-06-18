@@ -1,6 +1,7 @@
 package com.ouertani.safetyalertV2.controller;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
@@ -30,12 +31,15 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.ouertani.safetyalertV2.dto.GetFireStationClass;
 import com.ouertani.safetyalertV2.dto.GetFireStationClassReturn;
+import com.ouertani.safetyalertV2.dto.ListPersonsDetailsListStatioNumber;
+import com.ouertani.safetyalertV2.dto.PersonsDetailsListStatioNumber;
 import com.ouertani.safetyalertV2.model.FireStation;
 import com.ouertani.safetyalertV2.model.MedicalRecord;
 import com.ouertani.safetyalertV2.model.Person;
 import com.ouertani.safetyalertV2.service.IFireStationService;
 import com.ouertani.safetyalertV2.service.IMedicalRecordService;
 import com.ouertani.safetyalertV2.service.IPersonService;
+import com.ouertani.safetyalertV2.util.DateCalculator;
 
 @RestController
 public class FireStationRestController {
@@ -270,6 +274,95 @@ public class FireStationRestController {
 		throw new ResponseStatusException(HttpStatus.NOT_FOUND,
 				"Aucun numéro de téléphen n'est asscoié à cette adresse : "
 						+ allParams.toString());
+	}
+
+	@GetMapping("/flood/stations")
+	@ResponseStatus(code = HttpStatus.FOUND)
+	// http://localhost:8080/flood/stations?stations=<a list of station_numbers>
+	public List<ListPersonsDetailsListStatioNumber> listListPersonsDetailsListStatioNumber(
+			@RequestParam List<String> stations, @RequestParam Map<String, String> allParams)
+			throws JsonGenerationException, JsonMappingException, IOException, ParseException {
+
+		List<ListPersonsDetailsListStatioNumber> listListPersonsDetailsListStatioNumber = new ArrayList<ListPersonsDetailsListStatioNumber>();
+
+		if (allParams == null || stations == null) {
+			logger.error(
+					"Pour la requête GET il faut saisir un paramètre 'stations'."
+							+ allParams.toString());
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Pour la requête GET il faut saisir un paramètre 'stations'."
+							+ allParams.toString());
+		} else {
+			if (allParams.size() > 1) {
+				logger.error(
+						"Pour la requête GET saisir le paramètre 'stations'. Les paramètres suivants ne sont pas permis : "
+								+ allParams.keySet().stream().filter(c -> c.equals("stations") == false)
+										.collect(Collectors.toList()));
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+						"Pour la requête GET saisir le paramètre 'stations'. Les paramètres suivants ne sont pas permis : "
+								+ allParams.keySet().stream().filter(c -> c.equals("stations") == false)
+										.collect(Collectors.toList()));
+			}
+		}
+		logger.debug("stations : " + stations);
+		List<String> adresses = new ArrayList<String>();
+		for (String tempStation : stations) {
+			adresses.addAll(fireStationService.getAdressFireStation(tempStation));
+		}
+		if (adresses != null)
+			if (adresses.size() != 0) {
+				adresses = adresses.stream().distinct().filter(c -> c != null).collect(Collectors.toList());
+			} else {
+				logger.info("Aucune adresse ne correspond à cette station : ");
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aucune adresse ne correspond à station : ");
+			}
+		else {
+			logger.info("Aucune adresse ne correspond à cette station : ");
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aucune adresse ne correspond à station : ");
+		}
+		ListPersonsDetailsListStatioNumber listPersonsDetailsListStatioNumber;
+
+		for (String tempAdress : adresses) {
+			listPersonsDetailsListStatioNumber = new ListPersonsDetailsListStatioNumber();
+			listPersonsDetailsListStatioNumber
+					.setListPersonsDetailsListStatioNumber(new ArrayList<PersonsDetailsListStatioNumber>());
+			List<Person> tempPersons = personService.getPersonAdress(tempAdress);
+			if (tempPersons != null)
+				if (tempPersons.size() != 0) {
+
+					for (Person tempPerson : tempPersons) {
+						PersonsDetailsListStatioNumber personsDetailsListStatioNumber = new PersonsDetailsListStatioNumber(
+								tempPerson.getFirstName(), tempPerson.getLastName(), tempPerson.getPhone(), 0, null,
+								null);
+						MedicalRecord tempMedicalRecord = medicalRecordService
+								.getMedicalRecordPerson(tempPerson.getFirstName(), tempPerson.getLastName());
+						if (tempMedicalRecord != null) {
+							if (tempMedicalRecord.getBirthdate() != null)
+								personsDetailsListStatioNumber.setAge(DateCalculator
+										.ageCalculYears(tempMedicalRecord.getBirthdate(), LocalDate.now(),
+												DATE_FORMAT));
+							personsDetailsListStatioNumber.setMedications(tempMedicalRecord.getMedications());
+							personsDetailsListStatioNumber.setAllergies(tempMedicalRecord.getAllergies());
+						}
+						listPersonsDetailsListStatioNumber.getListPersonsDetailsListStatioNumber()
+								.add(personsDetailsListStatioNumber);
+					}
+					if (listPersonsDetailsListStatioNumber != null)
+						if (listPersonsDetailsListStatioNumber.getListPersonsDetailsListStatioNumber() != null)
+							if (listPersonsDetailsListStatioNumber.getListPersonsDetailsListStatioNumber().size() != 0)
+								listPersonsDetailsListStatioNumber.setAdress(tempAdress);
+
+				}
+			if (listPersonsDetailsListStatioNumber != null)
+				listListPersonsDetailsListStatioNumber.add(listPersonsDetailsListStatioNumber);
+		}
+		if (listListPersonsDetailsListStatioNumber != null)
+			if (listListPersonsDetailsListStatioNumber.size() != 0) {
+				logger.debug(
+						"SOUE77 listListPersonsDetailsListStatioNumber : " + listListPersonsDetailsListStatioNumber);
+				return listListPersonsDetailsListStatioNumber;
+			}
+		return null;
 	}
 
 }

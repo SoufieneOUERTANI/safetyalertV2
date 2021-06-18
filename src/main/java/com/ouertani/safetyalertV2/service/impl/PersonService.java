@@ -135,16 +135,20 @@ public class PersonService implements IPersonService {
 	}
 
 	@Override
-	public Person getPerson(String firstName, String lastName)
+	public List<Person> getPerson(String firstName, String lastName)
 			throws JsonGenerationException, JsonMappingException, IOException {
 		logger.info(
 				"Paramètre : " + " firstName : " + firstName + "/ lastName : " + lastName);
 		Mapping tempMapping = mappingService.readJsonFile(JSON_FILE);
-		Person thePerson = null;
+		List<Person> thePerson = new ArrayList<Person>();
 		for (Person tempPerson : tempMapping.getPersons()) {
+			if (tempPerson.getLastName().equals(lastName) && firstName == null) {
+				thePerson.add(tempPerson);
+				continue;
+			}
 			if (tempPerson.getFirstName().equals(firstName) && tempPerson.getLastName().equals(lastName)) {
-				thePerson = tempPerson;
-				break;
+				thePerson.add(tempPerson);
+				continue;
 			}
 		}
 		return thePerson;
