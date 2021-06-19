@@ -84,11 +84,6 @@ public class PersonRestControllerTest {
 	void tearDown() throws Exception {
 	}
 
-//	@Test
-//	final void testPersonRestController() {
-//		fail("Not yet implemented"); // TODO
-//	}
-
 	@Test
 	final void testPostPerson_NotAlreadyExist_isCreated() throws Exception {
 
@@ -165,8 +160,6 @@ public class PersonRestControllerTest {
 				"mapping : " + mappingService.readJsonFile(JSON_FILE) + "/" + "personsSize : "
 						+ mappingService.readJsonFile(JSON_FILE).getPersons().size());
 
-		// assertEquals(false,
-		// mappingService.readJsonFile(JSON_FILE).getPersons().contains(tempPerson));
 		assertEquals(0, mappingService.readJsonFile(JSON_FILE).getPersons().size() - personsSize_Before);
 
 	}
@@ -216,9 +209,6 @@ public class PersonRestControllerTest {
 		logger.debug(
 				"mapping : " + mappingService.readJsonFile(JSON_FILE) + "/" + "personsSize : "
 						+ personsSize_Before);
-
-		// firstName=Foster, lastName=Shepard, address=748 Townings Dr, city=Culver,
-		// zip=97451, phone=841-874-6544, email=jaboyd@email.com
 
 		Person tempPerson = new Person("Foster", "Shepard", "748 Townings Dr", "Culver", "97451", "841-874-6544",
 				"jaboyd@email.com");
@@ -307,7 +297,6 @@ public class PersonRestControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest())
-				// .andExpect(jsonPath("$.personnes").exists())
 				.andReturn();
 
 	}
@@ -324,7 +313,6 @@ public class PersonRestControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isNotFound())
-				// .andExpect(jsonPath("$.personnes").exists())
 				.andReturn();
 
 	}
@@ -341,7 +329,6 @@ public class PersonRestControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isNotFound())
-				// .andExpect(jsonPath("$.personnes").exists())
 				.andReturn();
 
 	}
@@ -359,7 +346,6 @@ public class PersonRestControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isFound())
-				// .andExpect(jsonPath("$.personnes").exists())
 				.andReturn();
 
 		List<MedicalDetailsPersonsAdress> readValue = mapper.readValue(mvcResult.getResponse().getContentAsString(),
@@ -389,7 +375,6 @@ public class PersonRestControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest())
-				// .andExpect(jsonPath("$.personnes").exists())
 				.andReturn();
 
 	}
@@ -406,7 +391,6 @@ public class PersonRestControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isNotFound())
-				// .andExpect(jsonPath("$.personnes").exists())
 				.andReturn();
 
 	}
@@ -424,7 +408,6 @@ public class PersonRestControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isFound())
-				// .andExpect(jsonPath("$.personnes").exists())
 				.andReturn();
 
 		List<String> readValue = mapper.readValue(mvcResult.getResponse().getContentAsString(),
@@ -460,7 +443,6 @@ public class PersonRestControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest())
-				// .andExpect(jsonPath("$.personnes").exists())
 				.andReturn();
 
 	}
@@ -473,7 +455,6 @@ public class PersonRestControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isNotFound())
-				// .andExpect(jsonPath("$.personnes").exists())
 				.andReturn();
 
 	}
@@ -491,7 +472,6 @@ public class PersonRestControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isFound())
-				// .andExpect(jsonPath("$.personnes").exists())
 				.andReturn();
 
 		List<PersonInfosName> readValue = mapper.readValue(mvcResult.getResponse().getContentAsString(),
@@ -535,7 +515,6 @@ public class PersonRestControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isFound())
-				// .andExpect(jsonPath("$.personnes").exists())
 				.andReturn();
 
 		List<PersonInfosName> readValue = mapper.readValue(mvcResult.getResponse().getContentAsString(),
@@ -594,7 +573,6 @@ public class PersonRestControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest())
-				// .andExpect(jsonPath("$.personnes").exists())
 				.andReturn();
 
 	}
@@ -607,7 +585,6 @@ public class PersonRestControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isNotFound())
-				// .andExpect(jsonPath("$.personnes").exists())
 				.andReturn();
 
 	}

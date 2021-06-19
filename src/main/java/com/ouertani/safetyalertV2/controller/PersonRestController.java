@@ -55,33 +55,6 @@ public class PersonRestController {
 
 	}
 
-	/*
-	 * @GetMapping("/persons") public List<Person> getPersons() { return
-	 * (List<Person>) personService.getPersons(); }
-	 */
-
-	/*
-	 * @GetMapping("/persons/{personId}") public Optional<Person>
-	 * getPerson(@PathVariable long personId) {
-	 * 
-	 * Optional<Person> thePerson = personService.getPerson(personId);
-	 * 
-	 * if (thePerson == null) { throw new RuntimeException("Person id not found - "
-	 * + personId); }
-	 * 
-	 * return thePerson; }
-	 */
-
-	/*
-	 * @GetMapping("/") public Mapping global() throws JsonGenerationException,
-	 * JsonMappingException, IOException {
-	 * 
-	 * IMappingService mappingService = new MappingService(); return
-	 * FileJsonMapping.mapping = mappingService.readJsonFile();
-	 * 
-	 * }
-	 */
-
 	@PostMapping("/person")
 	@ResponseStatus(code = HttpStatus.CREATED)
 	public Person addPerson(@RequestBody Person thePerson)
@@ -122,36 +95,6 @@ public class PersonRestController {
 		}
 		return "Deleted person id - " + firstName + " - " + lastName;
 	}
-
-	/*
-	 * ----------------------------------
-	 * 
-	 * http://localhost:8080/childAlert?address=<address> Cette url doit retourner
-	 * une liste d'enfants (tout individu âgé de 18 ans ou moins) habitant à cette
-	 * adresse. La liste doit comprendre le prénom et le nom de famille de chaque
-	 * enfant, son âge et une liste des autres membres du foyer. S'il n'y a pas
-	 * d'enfant, cette url peut renvoyer une chaîne vide.
-	 ***
-	 * 2 - List<Personne> getPersonAdress(Sting Adress) 3 - MedicalRecord
-	 * getMedicalRecordPerson(String firstName, String lastName) 4 - int getAge(Date
-	 * BirthDay) => Period.between(birthDate, currentDate).getYears();
-	 * 
-	 * DTO
-	 * 
-	 * 
-	 * List <Enfant> List <Adulte>
-	 */
-	/*
-	 * @GetMapping("/childAlert") public String
-	 * childAlert(@RequestParam(defaultValue = "empty") String address) { if
-	 * (firstName == "empty" || lastName == "empty") return
-	 * "Please give a \"firstName\" and a \"lastName\"";
-	 * 
-	 * boolean tempPerson = personService.deletePerson(firstName, lastName); if
-	 * (tempPerson == false) { throw new RuntimeException("Person not found - " +
-	 * firstName + " - "+ lastName); } return "Deleted person id - " + firstName +
-	 * " - "+ lastName; }
-	 */
 
 	@GetMapping("/childAlert")
 	@ResponseStatus(code = HttpStatus.FOUND)

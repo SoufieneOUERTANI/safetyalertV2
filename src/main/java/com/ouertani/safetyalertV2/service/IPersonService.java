@@ -25,10 +25,4 @@ public interface IPersonService {
 
 	List<Person> getPersonCity(String city) throws JsonGenerationException, JsonMappingException, IOException;
 
-	// ---
-
-	// Optional<Person> getPerson(long id);
-
-	// Iterable<Person> getPersons();
-
 }

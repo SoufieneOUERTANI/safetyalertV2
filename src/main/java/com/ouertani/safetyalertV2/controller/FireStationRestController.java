@@ -119,30 +119,6 @@ public class FireStationRestController {
 		return ("Deleted fireStations - " + tempFireStation.toString());
 	}
 
-	// ---------------------
-	/*
-	 * http://localhost:8080/firestation?stationNumber=<station_number> Cette url
-	 * doit retourner une liste des personnes couvertes par la caserne de pompiers
-	 * correspondante. Donc, si le numéro de station = 1, elle doit renvoyer les
-	 * habitants couverts par la station numéro 1. La liste doit inclure les
-	 * informations spécifiques suivantes : prénom, nom, adresse, numéro de
-	 * téléphone. De plus, elle doit fournir un décompte du nombre d'adultes et du
-	 * nombre d'enfants (tout individu âgé de 18 ans ou moins) dans la zone
-	 * desservie.
-	 */
-	/*
-	 * http://localhost:8080/firestation Cet endpoint permettra d’effectuer les
-	 * actions suivantes via Post/Put/Delete avec http : ● ajout d'un mapping
-	 * caserne/adresse ; ● mettre à jour le numéro de la caserne de pompiers d'une
-	 * adresse ; ● supprimer le mapping d'une caserne ou d'une adresse.
-	 */
-
-//	@GetMapping("/firestation")
-//	public GetFireStationClassReturn getFireStation(
-//			@RequestParam(
-//					// defaultValue = "empty",
-//					required = false) String fireStationNumber)
-
 	@GetMapping("/firestation")
 	@ResponseStatus(code = HttpStatus.FOUND)
 	public GetFireStationClassReturn getFireStation(

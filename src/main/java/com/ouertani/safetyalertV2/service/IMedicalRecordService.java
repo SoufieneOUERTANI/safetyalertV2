@@ -22,10 +22,4 @@ public interface IMedicalRecordService {
 	MedicalRecord getMedicalRecordPerson(String firstName, String lastName)
 			throws JsonGenerationException, JsonMappingException, IOException;
 
-	// ---
-
-	// Optional<MedicalRecord> getMedicalRecord(long id);
-
-	// Iterable<MedicalRecord> getMedicalRecords();
-
 }

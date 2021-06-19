@@ -13,6 +13,5 @@ import lombok.NoArgsConstructor;
 public class GetFireStationClassReturn {
 	int AdultNum;
 	int ChildNum;
-	// @JsonProperty("personnes")
 	List<GetFireStationClass> personnes;
 }

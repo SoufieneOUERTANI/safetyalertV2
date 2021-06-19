@@ -80,11 +80,6 @@ public class MedicalRecordRestControllerTest {
 	void tearDown() throws Exception {
 	}
 
-//	@Test
-//	final void testMedicalRecordRestController() {
-//		fail("Not yet implemented"); // TODO
-//	}
-
 	@Test
 	final void testPostMedicalRecord_NotAlreadyExist_isCreated() throws Exception {
 
@@ -165,8 +160,6 @@ public class MedicalRecordRestControllerTest {
 				"mapping : " + mappingService.readJsonFile(JSON_FILE) + "/" + "medicalRecordsSize : "
 						+ mappingService.readJsonFile(JSON_FILE).getMedicalRecords().size());
 
-		// assertEquals(false,
-		// mappingService.readJsonFile(JSON_FILE).getMedicalRecords().contains(tempMedicalRecord));
 		assertEquals(0, mappingService.readJsonFile(JSON_FILE).getMedicalRecords().size() - medicalRecordsSize_Before);
 
 	}

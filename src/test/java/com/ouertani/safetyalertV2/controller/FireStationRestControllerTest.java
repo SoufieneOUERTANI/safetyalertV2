@@ -85,26 +85,6 @@ public class FireStationRestControllerTest {
 	void tearDown() throws Exception {
 	}
 
-//	@Test
-//	final void testFireStationRestController() {
-//		fail("Not yet implemented"); // TODO
-//	}
-//
-//	@Test
-//	final void testAddFireStation() {
-//		fail("Not yet implemented"); // TODO
-//	}
-//
-//	@Test
-//	final void testUpdateFireStation() {
-//		fail("Not yet implemented"); // TODO
-//	}
-//
-//	@Test
-//	final void testDeleteFireStation() {
-//		fail("Not yet implemented"); // TODO
-//	}
-
 	@Test
 	final void testGetFireStation_stationNumber_2_isFound() throws Exception {
 

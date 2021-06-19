@@ -34,10 +34,4 @@ public interface IFireStationService {
 
 	String getFireStationAdress(String Adress) throws JsonGenerationException, JsonMappingException, IOException;
 
-	// ---
-
-	// Optional<FirstStation> getFirstStation(long id);
-
-	// Iterable<FirstStation> getFirstStations();
-
 }

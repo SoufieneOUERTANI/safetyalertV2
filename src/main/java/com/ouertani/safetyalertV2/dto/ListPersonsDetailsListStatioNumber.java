@@ -9,6 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ListPersonsDetailsListStatioNumber {
 	private String adress;
-	// @JsonAlias("DetailByAdess")
 	private List<PersonsDetailsListStatioNumber> listPersonsDetailsListStatioNumber;
 }
