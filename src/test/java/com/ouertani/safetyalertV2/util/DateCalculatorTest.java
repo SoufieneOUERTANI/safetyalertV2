@@ -1,6 +1,6 @@
 package com.ouertani.safetyalertV2.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.text.ParseException;
 import java.time.LocalDate;
