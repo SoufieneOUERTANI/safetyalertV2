@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MedicalRecordRestController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">safetyalertV2</a> &gt; <a href="index.source.html" class="el_package">com.ouertani.safetyalertV2.controller</a> &gt; <span class="el_source">MedicalRecordRestController.java</span></div><h1>MedicalRecordRestController.java</h1><pre class="source lang-java linenums">package com.ouertani.safetyalertV2.controller;
+
+import java.io.IOException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.ouertani.safetyalertV2.model.MedicalRecord;
+import com.ouertani.safetyalertV2.service.IMedicalRecordService;
+
+@RestController
+public class MedicalRecordRestController {
+
+	@Value(&quot;${JSON_FILE}&quot;)
+	private String JSON_FILE;
+
+	private IMedicalRecordService medicalRecordService;
+
+	@Autowired
+<span class="fc" id="L31">	public MedicalRecordRestController(IMedicalRecordService theMedicalRecordService) {</span>
+<span class="fc" id="L32">		medicalRecordService = theMedicalRecordService;</span>
+<span class="fc" id="L33">	}</span>
+
+	@PostMapping(&quot;/medicalRecord&quot;)
+	@ResponseStatus(code = HttpStatus.CREATED)
+	public MedicalRecord addMedicalRecord(@RequestBody MedicalRecord theMedicalRecord)
+			throws JsonGenerationException, JsonMappingException, IOException {
+
+<span class="fc" id="L40">		MedicalRecord tempMedicalRecord = medicalRecordService.addMedicalRecord(theMedicalRecord);</span>
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">		if (tempMedicalRecord == null) {</span>
+<span class="nc" id="L42">			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,</span>
+<span class="nc" id="L43">					&quot;Impossible to add the medicalRecord - &quot; + theMedicalRecord.getFirstName() + &quot; - &quot;</span>
+<span class="nc" id="L44">							+ theMedicalRecord.getLastName());</span>
+		}
+<span class="fc" id="L46">		return (tempMedicalRecord);</span>
+	}
+
+	@PutMapping(&quot;/medicalRecord&quot;)
+	@ResponseStatus(code = HttpStatus.ACCEPTED)
+	public MedicalRecord updateMedicalRecord(@RequestBody MedicalRecord theMedicalRecord)
+			throws JsonGenerationException, JsonMappingException, IOException {
+
+<span class="fc" id="L54">		MedicalRecord tempMedicalRecord = medicalRecordService.putMedicalRecord(theMedicalRecord);</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">		if (tempMedicalRecord == null) {</span>
+<span class="fc" id="L56">			throw new ResponseStatusException(HttpStatus.NOT_FOUND,</span>
+					&quot;Custom Error : Impossible to update the medicalRecord - &quot;
+<span class="fc" id="L58">							+ theMedicalRecord.getFirstName() + &quot; - &quot; + theMedicalRecord.getLastName());</span>
+		}
+<span class="fc" id="L60">		return theMedicalRecord;</span>
+	}
+
+	@DeleteMapping(&quot;/medicalRecord&quot;)
+	@ResponseStatus(code = HttpStatus.ACCEPTED)
+	public String deleteMedicalRecord(@RequestParam(defaultValue = &quot;empty&quot;) String firstName,
+			@RequestParam(defaultValue = &quot;empty&quot;) String lastName)
+			throws JsonGenerationException, JsonMappingException, IOException {
+<span class="pc bpc" id="L68" title="2 of 4 branches missed.">		if (firstName.equals(&quot;empty&quot;) || lastName.equals(&quot;empty&quot;))</span>
+<span class="nc" id="L69">			return &quot;Please give a \&quot;firstName\&quot; and a \&quot;lastName\&quot;&quot;;</span>
+
+<span class="fc" id="L71">		MedicalRecord tempMedicalRecord = medicalRecordService.deleteMedicalRecord(firstName, lastName);</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">		if (tempMedicalRecord == null) {</span>
+<span class="fc" id="L73">			throw new ResponseStatusException(HttpStatus.NOT_FOUND,</span>
+					&quot;MedicalRecord not found - &quot; + firstName + &quot; - &quot; + lastName);
+		}
+<span class="fc" id="L76">		return &quot;Deleted medicalRecord id - &quot; + firstName + &quot; - &quot; + lastName;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

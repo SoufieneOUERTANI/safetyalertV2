@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PersonService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">safetyalertV2</a> &gt; <a href="index.source.html" class="el_package">com.ouertani.safetyalertV2.service.impl</a> &gt; <span class="el_source">PersonService.java</span></div><h1>PersonService.java</h1><pre class="source lang-java linenums">package com.ouertani.safetyalertV2.service.impl;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.ouertani.safetyalertV2.model.ID;
+import com.ouertani.safetyalertV2.model.Mapping;
+import com.ouertani.safetyalertV2.model.Person;
+import com.ouertani.safetyalertV2.service.IMappingService;
+import com.ouertani.safetyalertV2.service.IPersonService;
+
+import lombok.Data;
+
+<span class="nc bnc" id="L26" title="All 22 branches missed.">@Data</span>
+@Service
+public class PersonService implements IPersonService {
+
+	@Value(&quot;${JSON_FILE}&quot;)
+<span class="nc" id="L31">	private String JSON_FILE;</span>
+
+<span class="fc" id="L33">	private static final Logger logger = LogManager.getLogger(&quot;FireStationService&quot;);</span>
+
+<span class="nc" id="L35">	IMappingService mappingService;</span>
+
+	@Autowired
+<span class="fc" id="L38">	public PersonService(IMappingService mappingService) {</span>
+<span class="fc" id="L39">		this.mappingService = mappingService;</span>
+<span class="fc" id="L40">	}</span>
+
+	@Override
+	public Person addPerson(Person person) throws JsonGenerationException, JsonMappingException, IOException {
+<span class="fc" id="L44">		logger.info(</span>
+				&quot;Paramètre body : &quot; + &quot; person : &quot; + person);
+
+<span class="fc" id="L47">		Mapping tempMapping = mappingService.readJsonFile(JSON_FILE);</span>
+<span class="fc" id="L48">		logger.debug(&quot;tempMapping : &quot; + tempMapping);</span>
+
+<span class="fc" id="L50">		List&lt;ID&gt; mappingPersonID = tempMapping.getPersons().stream()</span>
+<span class="fc" id="L51">				.map(c -&gt; new ID(c.getFirstName(), c.getLastName())).collect(Collectors.toList());</span>
+
+<span class="fc" id="L53">		logger.debug(&quot;mappingPersonID : &quot; + mappingPersonID);</span>
+
+<span class="fc" id="L55">		ID thePersonID = new ID(person.getFirstName(), person.getLastName());</span>
+
+<span class="fc bfc" id="L57" title="All 2 branches covered.">		if (!mappingPersonID.contains(thePersonID)) {</span>
+<span class="fc" id="L58">			tempMapping.getPersons().add(person);</span>
+		} else {
+<span class="fc" id="L60">			tempMapping.getFirestations().toString();</span>
+<span class="fc" id="L61">			logger.warn(&quot;L'objet existe déjà&quot;);</span>
+<span class="fc" id="L62">			logger.debug(&quot;person : &quot; + person);</span>
+<span class="fc" id="L63">			logger.debug(&quot;mapping.getPersons().toString() : &quot; + tempMapping.getPersons().toString());</span>
+
+<span class="fc" id="L65">			throw new ResponseStatusException(HttpStatus.CONFLICT, &quot;Custom Error : L'objet existe déjà&quot;);</span>
+		}
+<span class="fc" id="L67">		mappingService.writeJsonFile(JSON_FILE, tempMapping);</span>
+<span class="fc" id="L68">		return person;</span>
+
+	}
+
+	@Override
+	public Person putPerson(Person person) throws JsonGenerationException, JsonMappingException, IOException {
+<span class="fc" id="L74">		logger.info(</span>
+				&quot;Paramètre body : &quot; + &quot; person : &quot; + person);
+<span class="fc" id="L76">		Mapping tempMapping = mappingService.readJsonFile(JSON_FILE);</span>
+<span class="fc" id="L77">		int tempIndexOf = -1;</span>
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">		for (Person tempPerson : tempMapping.getPersons()) {</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">			if (tempPerson.getFirstName().equals(person.getFirstName())</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">					&amp;&amp; tempPerson.getLastName().equals(person.getLastName())) {</span>
+<span class="fc" id="L81">				tempIndexOf = tempMapping.getPersons().indexOf(tempPerson);</span>
+<span class="fc" id="L82">				break;</span>
+			}
+<span class="fc" id="L84">		}</span>
+
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">		if (tempIndexOf &gt; -1) {</span>
+<span class="fc" id="L87">			tempMapping.getPersons().get(tempIndexOf).setAddress(person.getAddress());</span>
+<span class="fc" id="L88">			tempMapping.getPersons().get(tempIndexOf).setCity(person.getCity());</span>
+<span class="fc" id="L89">			tempMapping.getPersons().get(tempIndexOf).setEmail(person.getEmail());</span>
+<span class="fc" id="L90">			tempMapping.getPersons().get(tempIndexOf).setPhone(person.getPhone());</span>
+<span class="fc" id="L91">			tempMapping.getPersons().get(tempIndexOf).setZip(person.getZip());</span>
+<span class="fc" id="L92">			mappingService.writeJsonFile(JSON_FILE, tempMapping);</span>
+<span class="fc" id="L93">			return tempMapping.getPersons().get(tempIndexOf);</span>
+		}
+<span class="nc" id="L95">		return null;</span>
+	}
+
+	@Override
+	public Person deletePerson(String firstName, String lastName)
+			throws JsonGenerationException, JsonMappingException, IOException {
+<span class="fc" id="L101">		logger.info(</span>
+				&quot;Paramètre : &quot; + &quot; firstName : &quot; + firstName + &quot;/ lastName : &quot; + lastName);
+<span class="fc" id="L103">		Mapping tempMapping = mappingService.readJsonFile(JSON_FILE);</span>
+<span class="fc" id="L104">		Person thePerson = null;</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">		for (Person tempPerson : tempMapping.getPersons()) {</span>
+<span class="pc bpc" id="L106" title="1 of 4 branches missed.">			if (tempPerson.getFirstName().equals(firstName) &amp;&amp; tempPerson.getLastName().equals(lastName)) {</span>
+<span class="fc" id="L107">				thePerson = tempPerson;</span>
+<span class="fc" id="L108">				break;</span>
+			}
+<span class="fc" id="L110">		}</span>
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">		if (thePerson != null) {</span>
+<span class="fc" id="L112">			tempMapping.getPersons().remove(thePerson);</span>
+<span class="fc" id="L113">			mappingService.writeJsonFile(JSON_FILE, tempMapping);</span>
+<span class="fc" id="L114">			return thePerson;</span>
+		}
+<span class="nc" id="L116">		return null;</span>
+	}
+
+	@Override
+	public List&lt;Person&gt; getPersonAdress(String idAdress)
+			throws JsonGenerationException, JsonMappingException, IOException {
+<span class="fc" id="L122">		logger.info(&quot;Paramètre &quot; + &quot;/ idAdress : &quot; + idAdress);</span>
+<span class="fc" id="L123">		List&lt;Person&gt; tempReturn = new ArrayList&lt;Person&gt;();</span>
+<span class="fc" id="L124">		Mapping tempMapping = mappingService.readJsonFile(JSON_FILE);</span>
+<span class="fc" id="L125">		logger.debug(&quot;tempMapping : &quot; + tempMapping);</span>
+<span class="fc bfc" id="L126" title="All 2 branches covered.">		for (Person tempPerson : tempMapping.getPersons()) {</span>
+<span class="fc" id="L127">			logger.debug(&quot;tempPerson : &quot; + tempPerson);</span>
+<span class="fc bfc" id="L128" title="All 2 branches covered.">			if (tempPerson.getAddress().equals(idAdress)) {</span>
+<span class="fc" id="L129">				tempReturn.add(tempPerson);</span>
+<span class="fc" id="L130">				logger.debug(&quot;tempPerson : &quot; + tempPerson);</span>
+			}
+<span class="fc" id="L132">		}</span>
+<span class="fc" id="L133">		logger.info(&quot;Retruned List&lt;Person&gt; getPersonAdress : &quot; + tempReturn);</span>
+<span class="fc" id="L134">		return tempReturn;</span>
+	}
+
+	@Override
+	public List&lt;Person&gt; getPerson(String firstName, String lastName)
+			throws JsonGenerationException, JsonMappingException, IOException {
+<span class="fc" id="L140">		logger.info(</span>
+				&quot;Paramètre : &quot; + &quot; firstName : &quot; + firstName + &quot;/ lastName : &quot; + lastName);
+<span class="fc" id="L142">		Mapping tempMapping = mappingService.readJsonFile(JSON_FILE);</span>
+<span class="fc" id="L143">		List&lt;Person&gt; thePerson = new ArrayList&lt;Person&gt;();</span>
+<span class="fc bfc" id="L144" title="All 2 branches covered.">		for (Person tempPerson : tempMapping.getPersons()) {</span>
+<span class="fc bfc" id="L145" title="All 4 branches covered.">			if (tempPerson.getLastName().equals(lastName) &amp;&amp; firstName == null) {</span>
+<span class="fc" id="L146">				thePerson.add(tempPerson);</span>
+<span class="fc" id="L147">				continue;</span>
+			}
+<span class="pc bpc" id="L149" title="1 of 4 branches missed.">			if (tempPerson.getFirstName().equals(firstName) &amp;&amp; tempPerson.getLastName().equals(lastName)) {</span>
+<span class="fc" id="L150">				thePerson.add(tempPerson);</span>
+<span class="fc" id="L151">				continue;</span>
+			}
+<span class="fc" id="L153">		}</span>
+<span class="fc" id="L154">		return thePerson;</span>
+	}
+
+	@Override
+	public List&lt;Person&gt; getPersonCity(String theCity)
+			throws JsonGenerationException, JsonMappingException, IOException {
+<span class="fc" id="L160">		logger.info(</span>
+				&quot;Paramètre : &quot; + &quot; theCity : &quot; + theCity);
+<span class="fc" id="L162">		Mapping tempMapping = mappingService.readJsonFile(JSON_FILE);</span>
+<span class="fc" id="L163">		List&lt;Person&gt; persons = new ArrayList&lt;Person&gt;();</span>
+<span class="fc bfc" id="L164" title="All 2 branches covered.">		for (Person tempPerson : tempMapping.getPersons()) {</span>
+<span class="fc bfc" id="L165" title="All 2 branches covered.">			if (tempPerson.getCity().equals(theCity)) {</span>
+<span class="fc" id="L166">				persons.add(tempPerson);</span>
+			}
+<span class="fc" id="L168">		}</span>
+<span class="fc" id="L169">		return persons;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

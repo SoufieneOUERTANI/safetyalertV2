@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FireStationRestController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">safetyalertV2</a> &gt; <a href="index.source.html" class="el_package">com.ouertani.safetyalertV2.controller</a> &gt; <span class="el_source">FireStationRestController.java</span></div><h1>FireStationRestController.java</h1><pre class="source lang-java linenums">package com.ouertani.safetyalertV2.controller;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.ouertani.safetyalertV2.dto.GetFireStationClass;
+import com.ouertani.safetyalertV2.dto.GetFireStationClassReturn;
+import com.ouertani.safetyalertV2.dto.ListPersonsDetailsListStatioNumber;
+import com.ouertani.safetyalertV2.dto.PersonsDetailsListStatioNumber;
+import com.ouertani.safetyalertV2.model.FireStation;
+import com.ouertani.safetyalertV2.model.MedicalRecord;
+import com.ouertani.safetyalertV2.model.Person;
+import com.ouertani.safetyalertV2.service.IFireStationService;
+import com.ouertani.safetyalertV2.service.IMedicalRecordService;
+import com.ouertani.safetyalertV2.service.IPersonService;
+import com.ouertani.safetyalertV2.util.DateCalculator;
+
+@RestController
+public class FireStationRestController {
+
+<span class="fc" id="L47">	private static final Logger logger = LogManager.getLogger(&quot;FireStationRestController&quot;);</span>
+
+	@Value(&quot;${spring.jackson.date-format}&quot;)
+	private String DATE_FORMAT;
+
+	private IFireStationService fireStationService;
+	private IPersonService personService;
+	private IMedicalRecordService medicalRecordService;
+
+	@Autowired
+	public FireStationRestController(IFireStationService theFireStationService, IPersonService thePersonService,
+<span class="fc" id="L58">			IMedicalRecordService theMedicalRecordService) {</span>
+<span class="fc" id="L59">		fireStationService = theFireStationService;</span>
+<span class="fc" id="L60">		personService = thePersonService;</span>
+<span class="fc" id="L61">		medicalRecordService = theMedicalRecordService;</span>
+<span class="fc" id="L62">	}</span>
+
+	@PostMapping(&quot;/firestation&quot;)
+	@ResponseStatus(code = HttpStatus.CREATED)
+	public FireStation addFireStation(@RequestBody FireStation theFireStation)
+			throws JsonGenerationException, JsonMappingException, IOException {
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">		if (theFireStation == null) {</span>
+<span class="nc" id="L69">			throw new RuntimeException(&quot;Impossible to add the null fireStation &quot;);</span>
+		}
+<span class="fc" id="L71">		FireStation tempFireStation = fireStationService.addFireStation(theFireStation);</span>
+<span class="fc" id="L72">		return (tempFireStation);</span>
+	}
+
+	@PutMapping(&quot;/firestation&quot;)
+	@ResponseStatus(code = HttpStatus.ACCEPTED)
+	public FireStation updateFireStation(@RequestBody FireStation theFireStation)
+			throws JsonGenerationException, JsonMappingException, IOException {
+
+<span class="fc" id="L80">		FireStation tempFireStation = fireStationService.putFireStation(theFireStation);</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">		if (tempFireStation == null) {</span>
+<span class="fc" id="L82">			throw new ResponseStatusException(HttpStatus.NOT_FOUND,</span>
+<span class="fc" id="L83">					&quot;Impossible to update the fireStation - &quot; + theFireStation.getAddress() + &quot; - &quot;</span>
+<span class="fc" id="L84">							+ theFireStation.getStation());</span>
+		}
+<span class="fc" id="L86">		return theFireStation;</span>
+	}
+
+	@DeleteMapping(&quot;/firestation&quot;)
+	@ResponseStatus(code = HttpStatus.ACCEPTED)
+	public String deleteFireStation(@RequestParam(defaultValue = &quot;empty&quot;) String fireStationAdress,
+			@RequestParam(defaultValue = &quot;empty&quot;) String stationNumber)
+			throws JsonGenerationException, JsonMappingException, IOException {
+
+<span class="fc" id="L95">		logger.info(fireStationAdress + &quot;/&quot; + stationNumber);</span>
+
+<span class="fc bfc" id="L97" title="All 4 branches covered.">		if (fireStationAdress.equals(&quot;empty&quot;) &amp;&amp; stationNumber.equals(&quot;empty&quot;))</span>
+<span class="fc" id="L98">			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,</span>
+					&quot;Pour la requête DELETE merci de saisir l'un des deux paramètres fireStationAdress ou stationNumber&quot;);
+
+<span class="fc" id="L101">		List&lt;FireStation&gt; tempFireStation = new ArrayList&lt;FireStation&gt;();</span>
+<span class="pc bpc" id="L102" title="1 of 4 branches missed.">		if (!fireStationAdress.equals(&quot;empty&quot;) &amp;&amp; stationNumber.equals(&quot;empty&quot;))</span>
+<span class="fc" id="L103">			tempFireStation = fireStationService.deleteFireStationAdress(fireStationAdress);</span>
+<span class="pc bpc" id="L104" title="1 of 4 branches missed.">		if (!stationNumber.equals(&quot;empty&quot;) &amp;&amp; fireStationAdress.equals(&quot;empty&quot;))</span>
+<span class="fc" id="L105">			tempFireStation = fireStationService.deleteFireStationStation(stationNumber);</span>
+<span class="pc bpc" id="L106" title="1 of 4 branches missed.">		if (!stationNumber.equals(&quot;empty&quot;) &amp;&amp; !fireStationAdress.equals(&quot;empty&quot;))</span>
+<span class="nc" id="L107">			tempFireStation = fireStationService.deleteFireStation(fireStationAdress, stationNumber);</span>
+
+<span class="fc bfc" id="L109" title="All 2 branches covered.">		if (tempFireStation == null) {</span>
+<span class="fc" id="L110">			throw new ResponseStatusException(HttpStatus.NOT_FOUND,</span>
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">					&quot;FireStation not found - &quot; + ((fireStationAdress.equals(&quot;empty&quot;)) ? &quot;&quot; : fireStationAdress) + &quot; - &quot;</span>
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">							+ ((stationNumber.equals(&quot;empty&quot;)) ? &quot;&quot; : stationNumber));</span>
+		}
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">		if (tempFireStation.size() == 0) {</span>
+<span class="nc" id="L115">			throw new ResponseStatusException(HttpStatus.NOT_FOUND,</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">					&quot;FireStation not found - &quot; + ((fireStationAdress.equals(&quot;empty&quot;)) ? &quot;&quot; : fireStationAdress) + &quot; - &quot;</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">							+ ((stationNumber.equals(&quot;empty&quot;)) ? &quot;&quot; : stationNumber));</span>
+		}
+<span class="fc" id="L119">		return (&quot;Deleted fireStations - &quot; + tempFireStation.toString());</span>
+	}
+
+	@GetMapping(&quot;/firestation&quot;)
+	@ResponseStatus(code = HttpStatus.FOUND)
+	public GetFireStationClassReturn getFireStation(
+			@RequestParam Map&lt;String, String&gt; allParams) {
+
+<span class="fc" id="L127">		logger.debug(&quot;allParams.size() : &quot; + allParams.size());</span>
+<span class="fc" id="L128">		logger.debug(&quot;allParams : &quot; + allParams.toString());</span>
+
+<span class="fc" id="L130">		String stationNumber = allParams.get(&quot;stationNumber&quot;);</span>
+<span class="pc bpc" id="L131" title="1 of 4 branches missed.">		if (allParams.size() == 1 &amp;&amp; stationNumber != null) {</span>
+<span class="fc" id="L132">			return getFireStationFireStationNumber(stationNumber);</span>
+		} else {
+<span class="fc" id="L134">			logger.error(</span>
+					&quot;Pour la requête GET il faut saisir un paramètre 'fireStationNumber'. Liste des paramètres saisis : &quot;
+<span class="fc" id="L136">							+ allParams.toString());</span>
+<span class="fc" id="L137">			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,</span>
+					&quot;Pour la requête GET il faut saisir un paramètre 'fireStationNumber'. Liste des paramètres saisis : &quot;
+<span class="fc" id="L139">							+ allParams.toString());</span>
+		}
+
+	}
+
+	/**
+	 * @param fireStationNumber
+	 * @return
+	 * @throws ResponseStatusException
+	 */
+	private GetFireStationClassReturn getFireStationFireStationNumber(String fireStationNumber)
+			throws ResponseStatusException {
+<span class="fc" id="L151">		List&lt;String&gt; parameters = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L152">		String Request = &quot;Get&quot;;</span>
+<span class="fc" id="L153">		String URI = &quot;/firestation&quot;;</span>
+<span class="fc" id="L154">		parameters.add(&quot;fireStationNumber : &quot; + fireStationNumber);</span>
+
+		try {
+<span class="fc" id="L157">			Integer tempInt = Integer.parseInt(fireStationNumber);</span>
+<span class="fc" id="L158">		} catch (NumberFormatException exc) {</span>
+<span class="fc" id="L159">			logger.warn(</span>
+<span class="fc" id="L160">					&quot;Request &quot; + Request + &quot; sur l'URI &quot; + URI + &quot; : avec les paramètres : &quot; + parameters.toString()</span>
+<span class="fc" id="L161">							+ &quot; Exception : &quot; + exc.toString());</span>
+<span class="fc" id="L162">			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;Custom Error : Non numeric request parameter&quot;,</span>
+					exc);
+<span class="fc" id="L164">		}</span>
+
+<span class="fc" id="L166">		GetFireStationClassReturn getFireStationClassReturn = null;</span>
+
+		try {
+<span class="fc" id="L169">			getFireStationClassReturn = new GetFireStationClassReturn();</span>
+<span class="fc" id="L170">			getFireStationClassReturn.setAdultNum(0);</span>
+<span class="fc" id="L171">			getFireStationClassReturn.setChildNum(0);</span>
+<span class="fc" id="L172">			getFireStationClassReturn.setPersonnes(new ArrayList&lt;GetFireStationClass&gt;());</span>
+
+<span class="fc" id="L174">			DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT);</span>
+
+			List&lt;String&gt; tempAdresses;
+<span class="fc" id="L177">			List&lt;Person&gt; tempPersons = null;</span>
+			MedicalRecord tempMedicalRecord;
+
+<span class="fc" id="L180">			tempAdresses = fireStationService.getAdressFireStation(fireStationNumber);</span>
+<span class="pc bpc" id="L181" title="1 of 2 branches missed.">			if (tempAdresses != null) {</span>
+<span class="fc bfc" id="L182" title="All 2 branches covered.">				for (String adress : tempAdresses) {</span>
+<span class="fc" id="L183">					tempPersons = personService.getPersonAdress(adress);</span>
+<span class="fc bfc" id="L184" title="All 2 branches covered.">					for (Person tempPerson : tempPersons) {</span>
+<span class="fc" id="L185">						tempMedicalRecord = medicalRecordService.getMedicalRecordPerson(tempPerson.getFirstName(),</span>
+<span class="fc" id="L186">								tempPerson.getLastName());</span>
+<span class="fc" id="L187">						GetFireStationClass tempGetFireStationClass = new GetFireStationClass(</span>
+<span class="fc" id="L188">								tempPerson.getFirstName(),</span>
+<span class="fc" id="L189">								tempPerson.getLastName(), tempPerson.getAddress(), tempPerson.getPhone());</span>
+<span class="fc" id="L190">						getFireStationClassReturn.getPersonnes().add(tempGetFireStationClass);</span>
+
+<span class="fc" id="L192">						if (Period.between(LocalDate.parse(tempMedicalRecord.getBirthdate(), formatter),</span>
+<span class="fc" id="L193">								new Date(System.currentTimeMillis()).toInstant()</span>
+<span class="fc" id="L194">										.atZone(ZoneId.systemDefault())</span>
+<span class="fc" id="L195">										.toLocalDate())</span>
+<span class="fc bfc" id="L196" title="All 2 branches covered.">								.getYears() &gt; 17)</span>
+<span class="fc" id="L197">							getFireStationClassReturn.setAdultNum(getFireStationClassReturn.getAdultNum() + 1);</span>
+						else
+<span class="fc" id="L199">							getFireStationClassReturn.setChildNum(getFireStationClassReturn.getChildNum() + 1);</span>
+<span class="fc" id="L200">					}</span>
+<span class="fc" id="L201">				}</span>
+			}
+<span class="nc" id="L203">		} catch (Exception exc) {</span>
+			// e.printStackTrace();
+<span class="nc" id="L205">			logger.error(</span>
+					&quot;failed request &quot; + Request + &quot; sur l'URI &quot; + URI + &quot; : avec les paramètres : &quot; + parameters,
+					exc);
+<span class="nc" id="L208">			return null;</span>
+<span class="fc" id="L209">		}</span>
+
+<span class="fc" id="L211">		logger.info(</span>
+				&quot;Succeeded request &quot; + Request + &quot; sur l'URI &quot; + URI + &quot; : avec les paramètres : &quot; + parameters);
+<span class="fc" id="L213">		return getFireStationClassReturn;</span>
+	}
+
+	@GetMapping(&quot;/phoneAlert&quot;)
+	@ResponseStatus(code = HttpStatus.FOUND)
+	public List&lt;String&gt; getPersonsPhoneFireStation(
+			@RequestParam Map&lt;String, String&gt; allParams)
+			throws JsonGenerationException, JsonMappingException, IOException {
+
+<span class="fc" id="L222">		logger.debug(&quot;allParams.size() : &quot; + allParams.size());</span>
+<span class="fc" id="L223">		logger.debug(&quot;allParams : &quot; + allParams.toString());</span>
+
+<span class="fc" id="L225">		List&lt;String&gt; listPhones = new ArrayList&lt;String&gt;();</span>
+
+<span class="fc" id="L227">		String idFirestation = allParams.get(&quot;firestation&quot;);</span>
+<span class="pc bpc" id="L228" title="2 of 4 branches missed.">		if (allParams.size() == 1 &amp;&amp; idFirestation != null) {</span>
+<span class="fc" id="L229">			List&lt;String&gt; listAdressesFireStation = fireStationService.getAdressFireStation(idFirestation);</span>
+<span class="fc bfc" id="L230" title="All 2 branches covered.">			for (String AdressesFireStation : listAdressesFireStation) {</span>
+<span class="fc bfc" id="L231" title="All 2 branches covered.">				for (Person tempPerson : personService.getPersonAdress(AdressesFireStation)) {</span>
+<span class="pc bpc" id="L232" title="1 of 2 branches missed.">					if (tempPerson.getPhone() != null)</span>
+<span class="fc" id="L233">						listPhones.add(tempPerson.getPhone());</span>
+<span class="fc" id="L234">				}</span>
+<span class="fc" id="L235">			}</span>
+<span class="fc" id="L236">		} else {</span>
+<span class="nc" id="L237">			logger.error(</span>
+					&quot;Pour la requête GET il faut saisir un paramètre 'phoneAlert'. Liste des paramètres saisis : &quot;
+<span class="nc" id="L239">							+ allParams.toString());</span>
+<span class="nc" id="L240">			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,</span>
+					&quot;Pour la requête GET il faut saisir un paramètre 'phoneAlert'. Liste des paramètres saisis : &quot;
+<span class="nc" id="L242">							+ allParams.toString());</span>
+		}
+<span class="fc bfc" id="L244" title="All 2 branches covered.">		if (listPhones.size() != 0) {</span>
+<span class="fc" id="L245">			listPhones = listPhones.stream()</span>
+<span class="fc" id="L246">					.distinct()</span>
+<span class="fc" id="L247">					.collect(Collectors.toList());</span>
+<span class="fc" id="L248">			return listPhones;</span>
+		}
+<span class="fc" id="L250">		throw new ResponseStatusException(HttpStatus.NOT_FOUND,</span>
+				&quot;Aucun numéro de téléphen n'est asscoié à cette adresse : &quot;
+<span class="fc" id="L252">						+ allParams.toString());</span>
+	}
+
+	@GetMapping(&quot;/flood/stations&quot;)
+	@ResponseStatus(code = HttpStatus.FOUND)
+	// http://localhost:8080/flood/stations?stations=&lt;a list of station_numbers&gt;
+	public List&lt;ListPersonsDetailsListStatioNumber&gt; listListPersonsDetailsListStatioNumber(
+			@RequestParam List&lt;String&gt; stations, @RequestParam Map&lt;String, String&gt; allParams)
+			throws JsonGenerationException, JsonMappingException, IOException, ParseException {
+
+<span class="fc" id="L262">		List&lt;ListPersonsDetailsListStatioNumber&gt; listListPersonsDetailsListStatioNumber = new ArrayList&lt;ListPersonsDetailsListStatioNumber&gt;();</span>
+
+<span class="pc bpc" id="L264" title="2 of 4 branches missed.">		if (allParams == null || stations == null) {</span>
+<span class="nc" id="L265">			logger.error(</span>
+					&quot;Pour la requête GET il faut saisir un paramètre 'stations'.&quot;
+<span class="nc" id="L267">							+ allParams.toString());</span>
+<span class="nc" id="L268">			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,</span>
+					&quot;Pour la requête GET il faut saisir un paramètre 'stations'.&quot;
+<span class="nc" id="L270">							+ allParams.toString());</span>
+		} else {
+<span class="fc bfc" id="L272" title="All 2 branches covered.">			if (allParams.size() &gt; 1) {</span>
+<span class="fc" id="L273">				logger.error(</span>
+						&quot;Pour la requête GET saisir le paramètre 'stations'. Les paramètres suivants ne sont pas permis : &quot;
+<span class="fc bfc" id="L275" title="All 2 branches covered.">								+ allParams.keySet().stream().filter(c -&gt; c.equals(&quot;stations&quot;) == false)</span>
+<span class="fc" id="L276">										.collect(Collectors.toList()));</span>
+<span class="fc" id="L277">				throw new ResponseStatusException(HttpStatus.BAD_REQUEST,</span>
+						&quot;Pour la requête GET saisir le paramètre 'stations'. Les paramètres suivants ne sont pas permis : &quot;
+<span class="fc bfc" id="L279" title="All 2 branches covered.">								+ allParams.keySet().stream().filter(c -&gt; c.equals(&quot;stations&quot;) == false)</span>
+<span class="fc" id="L280">										.collect(Collectors.toList()));</span>
+			}
+		}
+<span class="fc" id="L283">		logger.debug(&quot;stations : &quot; + stations);</span>
+<span class="fc" id="L284">		List&lt;String&gt; adresses = new ArrayList&lt;String&gt;();</span>
+<span class="fc bfc" id="L285" title="All 2 branches covered.">		for (String tempStation : stations) {</span>
+<span class="fc" id="L286">			adresses.addAll(fireStationService.getAdressFireStation(tempStation));</span>
+<span class="fc" id="L287">		}</span>
+<span class="pc bpc" id="L288" title="1 of 2 branches missed.">		if (adresses != null)</span>
+<span class="pc bpc" id="L289" title="1 of 2 branches missed.">			if (adresses.size() != 0) {</span>
+<span class="pc bpc" id="L290" title="1 of 2 branches missed.">				adresses = adresses.stream().distinct().filter(c -&gt; c != null).collect(Collectors.toList());</span>
+			} else {
+<span class="nc" id="L292">				logger.info(&quot;Aucune adresse ne correspond à cette station : &quot;);</span>
+<span class="nc" id="L293">				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;Aucune adresse ne correspond à station : &quot;);</span>
+			}
+		else {
+<span class="nc" id="L296">			logger.info(&quot;Aucune adresse ne correspond à cette station : &quot;);</span>
+<span class="nc" id="L297">			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;Aucune adresse ne correspond à station : &quot;);</span>
+		}
+		ListPersonsDetailsListStatioNumber listPersonsDetailsListStatioNumber;
+
+<span class="fc bfc" id="L301" title="All 2 branches covered.">		for (String tempAdress : adresses) {</span>
+<span class="fc" id="L302">			listPersonsDetailsListStatioNumber = new ListPersonsDetailsListStatioNumber();</span>
+<span class="fc" id="L303">			listPersonsDetailsListStatioNumber</span>
+<span class="fc" id="L304">					.setListPersonsDetailsListStatioNumber(new ArrayList&lt;PersonsDetailsListStatioNumber&gt;());</span>
+<span class="fc" id="L305">			List&lt;Person&gt; tempPersons = personService.getPersonAdress(tempAdress);</span>
+<span class="pc bpc" id="L306" title="1 of 2 branches missed.">			if (tempPersons != null)</span>
+<span class="pc bpc" id="L307" title="1 of 2 branches missed.">				if (tempPersons.size() != 0) {</span>
+
+<span class="fc bfc" id="L309" title="All 2 branches covered.">					for (Person tempPerson : tempPersons) {</span>
+<span class="fc" id="L310">						PersonsDetailsListStatioNumber personsDetailsListStatioNumber = new PersonsDetailsListStatioNumber(</span>
+<span class="fc" id="L311">								tempPerson.getFirstName(), tempPerson.getLastName(), tempPerson.getPhone(), 0, null,</span>
+								null);
+<span class="fc" id="L313">						MedicalRecord tempMedicalRecord = medicalRecordService</span>
+<span class="fc" id="L314">								.getMedicalRecordPerson(tempPerson.getFirstName(), tempPerson.getLastName());</span>
+<span class="pc bpc" id="L315" title="1 of 2 branches missed.">						if (tempMedicalRecord != null) {</span>
+<span class="pc bpc" id="L316" title="1 of 2 branches missed.">							if (tempMedicalRecord.getBirthdate() != null)</span>
+<span class="fc" id="L317">								personsDetailsListStatioNumber.setAge(DateCalculator</span>
+<span class="fc" id="L318">										.ageCalculYears(tempMedicalRecord.getBirthdate(), LocalDate.now(),</span>
+												DATE_FORMAT));
+<span class="fc" id="L320">							personsDetailsListStatioNumber.setMedications(tempMedicalRecord.getMedications());</span>
+<span class="fc" id="L321">							personsDetailsListStatioNumber.setAllergies(tempMedicalRecord.getAllergies());</span>
+						}
+<span class="fc" id="L323">						listPersonsDetailsListStatioNumber.getListPersonsDetailsListStatioNumber()</span>
+<span class="fc" id="L324">								.add(personsDetailsListStatioNumber);</span>
+<span class="fc" id="L325">					}</span>
+<span class="pc bpc" id="L326" title="1 of 2 branches missed.">					if (listPersonsDetailsListStatioNumber != null)</span>
+<span class="pc bpc" id="L327" title="1 of 2 branches missed.">						if (listPersonsDetailsListStatioNumber.getListPersonsDetailsListStatioNumber() != null)</span>
+<span class="pc bpc" id="L328" title="1 of 2 branches missed.">							if (listPersonsDetailsListStatioNumber.getListPersonsDetailsListStatioNumber().size() != 0)</span>
+<span class="fc" id="L329">								listPersonsDetailsListStatioNumber.setAdress(tempAdress);</span>
+
+				}
+<span class="pc bpc" id="L332" title="1 of 2 branches missed.">			if (listPersonsDetailsListStatioNumber != null)</span>
+<span class="fc" id="L333">				listListPersonsDetailsListStatioNumber.add(listPersonsDetailsListStatioNumber);</span>
+<span class="fc" id="L334">		}</span>
+<span class="pc bpc" id="L335" title="1 of 2 branches missed.">		if (listListPersonsDetailsListStatioNumber != null)</span>
+<span class="pc bpc" id="L336" title="1 of 2 branches missed.">			if (listListPersonsDetailsListStatioNumber.size() != 0) {</span>
+<span class="fc" id="L337">				logger.debug(</span>
+						&quot;SOUE77 listListPersonsDetailsListStatioNumber : &quot; + listListPersonsDetailsListStatioNumber);
+<span class="fc" id="L339">				return listListPersonsDetailsListStatioNumber;</span>
+			}
+<span class="nc" id="L341">		return null;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

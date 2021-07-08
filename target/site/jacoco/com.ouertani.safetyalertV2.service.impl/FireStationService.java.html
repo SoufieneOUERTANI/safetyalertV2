@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FireStationService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">safetyalertV2</a> &gt; <a href="index.source.html" class="el_package">com.ouertani.safetyalertV2.service.impl</a> &gt; <span class="el_source">FireStationService.java</span></div><h1>FireStationService.java</h1><pre class="source lang-java linenums">package com.ouertani.safetyalertV2.service.impl;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.ouertani.safetyalertV2.model.FireStation;
+import com.ouertani.safetyalertV2.model.Mapping;
+import com.ouertani.safetyalertV2.service.IFireStationService;
+import com.ouertani.safetyalertV2.service.IMappingService;
+
+@Service
+public class FireStationService implements IFireStationService {
+
+	@Value(&quot;${JSON_FILE}&quot;)
+	private String JSON_FILE;
+
+<span class="fc" id="L29">	private static final Logger logger = LogManager.getLogger(&quot;FireStationService&quot;);</span>
+
+	IMappingService mappingService;
+
+	@Autowired
+<span class="fc" id="L34">	public FireStationService(IMappingService mappingService) {</span>
+<span class="fc" id="L35">		this.mappingService = mappingService;</span>
+<span class="fc" id="L36">	}</span>
+
+	@Override
+	public FireStation addFireStation(FireStation firstStation)
+			throws JsonGenerationException, JsonMappingException, IOException {
+<span class="fc" id="L41">		logger.info(</span>
+				&quot;Paramètre body : &quot; + &quot; firstStation : &quot; + firstStation);
+<span class="fc" id="L43">		Mapping mapping = mappingService.readJsonFile(JSON_FILE);</span>
+
+<span class="fc bfc" id="L45" title="All 2 branches covered.">		if (!mapping.getFirestations().contains(firstStation)) {</span>
+<span class="fc" id="L46">			mapping.getFirestations().add(firstStation);</span>
+		} else {
+<span class="fc" id="L48">			mapping.getFirestations().toString();</span>
+<span class="fc" id="L49">			logger.warn(&quot;L'objet existe déjà&quot;);</span>
+<span class="fc" id="L50">			logger.debug(&quot;firstStation : &quot; + firstStation);</span>
+<span class="fc" id="L51">			logger.debug(&quot;mapping.getFirestations().toString() : &quot; + mapping.getFirestations().toString());</span>
+
+<span class="fc" id="L53">			throw new ResponseStatusException(HttpStatus.CONFLICT, &quot;Custom Error : L'objet existe déjà&quot;);</span>
+		}
+<span class="fc" id="L55">		mappingService.writeJsonFile(JSON_FILE, mapping);</span>
+<span class="fc" id="L56">		return firstStation;</span>
+	}
+
+	@Override
+	public FireStation putFireStation(FireStation firstStation)
+			throws JsonGenerationException, JsonMappingException, IOException {
+
+<span class="fc" id="L63">		logger.info(</span>
+				&quot;Paramètre body : &quot; + &quot; firstStation : &quot; + firstStation);
+<span class="fc" id="L65">		Mapping tempMapping = mappingService.readJsonFile(JSON_FILE);</span>
+<span class="fc" id="L66">		int tempIndexOf = -1;</span>
+<span class="fc bfc" id="L67" title="All 2 branches covered.">		for (FireStation tempFireStation : tempMapping.getFirestations()) {</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">			if (tempFireStation.getAddress().equals(firstStation.getAddress())) {</span>
+<span class="fc" id="L69">				tempIndexOf = tempMapping.getFirestations().indexOf(tempFireStation);</span>
+<span class="fc" id="L70">				break;</span>
+			}
+<span class="fc" id="L72">		}</span>
+
+<span class="fc bfc" id="L74" title="All 2 branches covered.">		if (tempIndexOf &gt; -1) {</span>
+<span class="fc" id="L75">			tempMapping.getFirestations().get(tempIndexOf).setStation(firstStation.getStation());</span>
+<span class="fc" id="L76">			mappingService.writeJsonFile(JSON_FILE, tempMapping);</span>
+<span class="fc" id="L77">			return tempMapping.getFirestations().get(tempIndexOf);</span>
+		}
+<span class="fc" id="L79">		return null;</span>
+	}
+
+	@Override
+	public String getFireStationAdress(String addressFireStation)
+			throws JsonGenerationException, JsonMappingException, IOException {
+<span class="fc" id="L85">		logger.info(&quot;Paramètre : &quot; + &quot;/ addressFireStation : &quot; + addressFireStation);</span>
+
+<span class="fc" id="L87">		Mapping tempMapping = mappingService.readJsonFile(JSON_FILE);</span>
+<span class="fc" id="L88">		logger.debug(&quot;tempMapping : &quot; + tempMapping);</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">		for (FireStation tempFireStation : tempMapping.getFirestations()) {</span>
+<span class="fc" id="L90">			logger.debug(&quot;tempFireStation : &quot; + tempFireStation);</span>
+<span class="fc bfc" id="L91" title="All 2 branches covered.">			if (tempFireStation.getAddress().equals(addressFireStation)) {</span>
+<span class="fc" id="L92">				logger.debug(&quot;tempFireStation pris en compte : &quot; + tempFireStation);</span>
+<span class="fc" id="L93">				return tempFireStation.getStation();</span>
+			}
+<span class="fc" id="L95">		}</span>
+<span class="fc" id="L96">		return null;</span>
+	}
+
+	@Override
+	public List&lt;FireStation&gt; deleteFireStationAdress(String addressFireStation)
+			throws JsonGenerationException, JsonMappingException, IOException {
+<span class="fc" id="L102">		logger.info(</span>
+				&quot;Paramètre : &quot; + &quot; addressFireStation : &quot; + addressFireStation);
+<span class="fc" id="L104">		Mapping tempMapping = mappingService.readJsonFile(JSON_FILE);</span>
+<span class="fc" id="L105">		List&lt;FireStation&gt; tempFireStations = new ArrayList&lt;FireStation&gt;();</span>
+<span class="fc bfc" id="L106" title="All 2 branches covered.">		for (FireStation tempFireStation : tempMapping.getFirestations()) {</span>
+<span class="fc bfc" id="L107" title="All 2 branches covered.">			if (tempFireStation.getAddress().equals(addressFireStation)) {</span>
+<span class="fc" id="L108">				tempFireStations.add(tempFireStation);</span>
+			}
+<span class="fc" id="L110">		}</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">		if (tempFireStations.size() != 0) {</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">			for (FireStation tempFireStation : tempFireStations) {</span>
+<span class="fc" id="L113">				tempMapping.getFirestations().remove(tempFireStation);</span>
+<span class="fc" id="L114">			}</span>
+<span class="fc" id="L115">			mappingService.writeJsonFile(JSON_FILE, tempMapping);</span>
+<span class="fc" id="L116">			return tempFireStations;</span>
+		}
+<span class="fc" id="L118">		return null;</span>
+	}
+
+	@Override
+	public List&lt;FireStation&gt; deleteFireStationStation(String idFireStation)
+			throws JsonGenerationException, JsonMappingException, IOException {
+<span class="fc" id="L124">		logger.info(</span>
+				&quot;Paramètre : &quot; + &quot; idFireStation : &quot; + idFireStation);
+<span class="fc" id="L126">		Mapping tempMapping = mappingService.readJsonFile(JSON_FILE);</span>
+<span class="fc" id="L127">		List&lt;FireStation&gt; tempFireStations = new ArrayList&lt;FireStation&gt;();</span>
+<span class="fc bfc" id="L128" title="All 2 branches covered.">		for (FireStation tempFireStation : tempMapping.getFirestations()) {</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">			if (tempFireStation.getStation().equals(idFireStation)) {</span>
+<span class="fc" id="L130">				tempFireStations.add(tempFireStation);</span>
+			}
+<span class="fc" id="L132">		}</span>
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">		if (tempFireStations.size() != 0) {</span>
+<span class="fc bfc" id="L134" title="All 2 branches covered.">			for (FireStation tempFireStation : tempFireStations) {</span>
+<span class="fc" id="L135">				tempMapping.getFirestations().remove(tempFireStation);</span>
+<span class="fc" id="L136">			}</span>
+<span class="fc" id="L137">			mappingService.writeJsonFile(JSON_FILE, tempMapping);</span>
+<span class="fc" id="L138">			return tempFireStations;</span>
+		}
+<span class="nc" id="L140">		return null;</span>
+
+	}
+
+	public List&lt;FireStation&gt; deleteFireStation(String addressFireStation, String idFireStation)
+			throws JsonGenerationException, JsonMappingException, IOException {
+<span class="nc" id="L146">		logger.info(</span>
+				&quot;Paramètre : &quot; + &quot;/ addressFireStation : &quot; + addressFireStation + &quot;/ idFireStation : &quot; + idFireStation);
+<span class="nc" id="L148">		Mapping tempMapping = mappingService.readJsonFile(JSON_FILE);</span>
+<span class="nc" id="L149">		FireStation tempFireStation = new FireStation(addressFireStation, idFireStation);</span>
+
+<span class="nc bnc" id="L151" title="All 2 branches missed.">		if (tempMapping.getFirestations().contains(tempFireStation)) {</span>
+<span class="nc" id="L152">			tempMapping.getFirestations().remove(tempFireStation);</span>
+		} else {
+<span class="nc" id="L154">			logger.warn(&quot;L'objet n'existe pas&quot;);</span>
+<span class="nc" id="L155">			logger.debug(&quot;firstStation : &quot; + tempFireStation);</span>
+<span class="nc" id="L156">			logger.debug(&quot;mapping.getFirestations().toString() : &quot; + tempMapping.getFirestations().toString());</span>
+
+<span class="nc" id="L158">			throw new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Custom Error : L'objet n'existe pas&quot;);</span>
+		}
+<span class="nc" id="L160">		mappingService.writeJsonFile(JSON_FILE, tempMapping);</span>
+<span class="nc" id="L161">		return Arrays.asList(tempFireStation);</span>
+
+	}
+
+	@Override
+	public List&lt;String&gt; getAdressFireStation(String idFireStation)
+			throws JsonGenerationException, JsonMappingException, IOException {
+<span class="fc" id="L168">		logger.info(&quot;Paramètre : &quot; + &quot;/ idFireStation : &quot; + idFireStation);</span>
+
+<span class="fc" id="L170">		List&lt;String&gt; tempReturn = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L171">		Mapping tempMapping = mappingService.readJsonFile(JSON_FILE);</span>
+<span class="fc" id="L172">		logger.debug(&quot;tempMapping : &quot; + tempMapping);</span>
+<span class="fc bfc" id="L173" title="All 2 branches covered.">		for (FireStation tempFireStation : tempMapping.getFirestations()) {</span>
+<span class="fc" id="L174">			logger.debug(&quot;tempFireStation : &quot; + tempFireStation);</span>
+<span class="fc bfc" id="L175" title="All 2 branches covered.">			if (tempFireStation.getStation().equals(idFireStation)) {</span>
+<span class="fc" id="L176">				tempReturn.add(tempFireStation.getAddress());</span>
+<span class="fc" id="L177">				logger.debug(&quot;tempFireStation pris en compte : &quot; + tempFireStation);</span>
+			}
+<span class="fc" id="L179">		}</span>
+<span class="fc" id="L180">		logger.info(&quot;returned List&lt;String&gt; getAdressFireStation  : &quot; + tempReturn);</span>
+<span class="fc" id="L181">		return tempReturn;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

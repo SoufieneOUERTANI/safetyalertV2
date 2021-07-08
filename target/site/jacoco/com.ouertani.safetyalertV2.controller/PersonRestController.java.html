@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PersonRestController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">safetyalertV2</a> &gt; <a href="index.source.html" class="el_package">com.ouertani.safetyalertV2.controller</a> &gt; <span class="el_source">PersonRestController.java</span></div><h1>PersonRestController.java</h1><pre class="source lang-java linenums">package com.ouertani.safetyalertV2.controller;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.ouertani.safetyalertV2.dto.MedicalDetailsPersonsAdress;
+import com.ouertani.safetyalertV2.dto.PersonInfosName;
+import com.ouertani.safetyalertV2.model.MedicalRecord;
+import com.ouertani.safetyalertV2.model.Person;
+import com.ouertani.safetyalertV2.service.IFireStationService;
+import com.ouertani.safetyalertV2.service.IMedicalRecordService;
+import com.ouertani.safetyalertV2.service.IPersonService;
+import com.ouertani.safetyalertV2.util.DateCalculator;
+
+@RestController
+public class PersonRestController {
+
+<span class="fc" id="L40">	private static final Logger logger = LogManager.getLogger(&quot;FireStationRestController&quot;);</span>
+
+	@Value(&quot;${spring.jackson.date-format}&quot;)
+	private String DATE_FORMAT;
+
+	private IPersonService personService;
+	private IMedicalRecordService medicalRecordService;
+	private IFireStationService fireStationService;
+
+	@Autowired
+	public PersonRestController(IPersonService thePersonService, IMedicalRecordService theMedicalRecordService,
+<span class="fc" id="L51">			IFireStationService theFireStationService) {</span>
+<span class="fc" id="L52">		personService = thePersonService;</span>
+<span class="fc" id="L53">		medicalRecordService = theMedicalRecordService;</span>
+<span class="fc" id="L54">		fireStationService = theFireStationService;</span>
+
+<span class="fc" id="L56">	}</span>
+
+	@PostMapping(&quot;/person&quot;)
+	@ResponseStatus(code = HttpStatus.CREATED)
+	public Person addPerson(@RequestBody Person thePerson)
+			throws JsonGenerationException, JsonMappingException, IOException {
+
+<span class="fc" id="L63">		Person tempPerson = personService.addPerson(thePerson);</span>
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">		if (tempPerson == null) {</span>
+<span class="nc" id="L65">			throw new RuntimeException(</span>
+<span class="nc" id="L66">					&quot;Impossible to add the person - &quot; + thePerson.getFirstName() + &quot; - &quot; + thePerson.getLastName());</span>
+		}
+<span class="fc" id="L68">		return (tempPerson);</span>
+	}
+
+	@PutMapping(&quot;/person&quot;)
+	@ResponseStatus(code = HttpStatus.ACCEPTED)
+	public Person updatePerson(@RequestBody Person thePerson)
+			throws JsonGenerationException, JsonMappingException, IOException {
+
+<span class="fc" id="L76">		Person tempPerson = personService.putPerson(thePerson);</span>
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">		if (tempPerson == null) {</span>
+<span class="nc" id="L78">			throw new RuntimeException(</span>
+<span class="nc" id="L79">					&quot;Impossible to update the person - &quot; + thePerson.getFirstName() + &quot; - &quot; + thePerson.getLastName());</span>
+		}
+<span class="fc" id="L81">		return thePerson;</span>
+	}
+
+	@DeleteMapping(&quot;/person&quot;)
+	@ResponseStatus(code = HttpStatus.ACCEPTED)
+	public String deletePerson(@RequestParam(defaultValue = &quot;empty&quot;) String firstName,
+			@RequestParam(defaultValue = &quot;empty&quot;) String lastName)
+			throws JsonGenerationException, JsonMappingException, IOException {
+<span class="pc bpc" id="L89" title="2 of 4 branches missed.">		if (firstName.equals(&quot;empty&quot;) || lastName.equals(&quot;empty&quot;))</span>
+<span class="nc" id="L90">			return &quot;Please give a \&quot;firstName\&quot; and a \&quot;lastName\&quot;&quot;;</span>
+
+<span class="fc" id="L92">		Person tempPerson = personService.deletePerson(firstName, lastName);</span>
+<span class="pc bpc" id="L93" title="1 of 2 branches missed.">		if (tempPerson == null) {</span>
+<span class="nc" id="L94">			throw new RuntimeException(&quot;Person not found - &quot; + firstName + &quot; - &quot; + lastName);</span>
+		}
+<span class="fc" id="L96">		return &quot;Deleted person id - &quot; + firstName + &quot; - &quot; + lastName;</span>
+	}
+
+	@GetMapping(&quot;/childAlert&quot;)
+	@ResponseStatus(code = HttpStatus.FOUND)
+	public List&lt;Person&gt; getChildrenAdress(
+			@RequestParam Map&lt;String, String&gt; allParams)
+			throws JsonGenerationException, JsonMappingException, IOException, ParseException {
+
+<span class="fc" id="L105">		logger.debug(&quot;allParams.size() : &quot; + allParams.size());</span>
+<span class="fc" id="L106">		logger.debug(&quot;allParams : &quot; + allParams.toString());</span>
+
+<span class="fc" id="L108">		List&lt;Person&gt; chidren = new ArrayList&lt;Person&gt;();</span>
+<span class="fc" id="L109">		String adress = allParams.get(&quot;address&quot;);</span>
+<span class="pc bpc" id="L110" title="1 of 4 branches missed.">		if (allParams.size() == 1 &amp;&amp; adress != null) {</span>
+<span class="fc" id="L111">			List&lt;Person&gt; tempPersons = personService.getPersonAdress(adress);</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">			if (tempPersons.size() == 0) {</span>
+<span class="fc" id="L113">				throw new ResponseStatusException(HttpStatus.NOT_FOUND,</span>
+						&quot;Aucun personne dans cette adresse&quot;);
+			}
+
+<span class="fc bfc" id="L117" title="All 2 branches covered.">			for (Person tempPerson : tempPersons) {</span>
+<span class="fc" id="L118">				MedicalRecord tempMedicalRedord = medicalRecordService.getMedicalRecordPerson(tempPerson.getFirstName(),</span>
+<span class="fc" id="L119">						tempPerson.getLastName());</span>
+<span class="fc" id="L120">				int age = DateCalculator.ageCalculYears(tempMedicalRedord.getBirthdate(), LocalDate.now(), DATE_FORMAT);</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">				if (age &lt; 18) {</span>
+<span class="fc" id="L122">					logger.debug(&quot;tempPerson : &quot; + tempPerson);</span>
+<span class="fc" id="L123">					chidren.add(tempPerson);</span>
+				}
+<span class="fc" id="L125">			}</span>
+
+<span class="fc" id="L127">		} else {</span>
+<span class="fc" id="L128">			logger.error(</span>
+					&quot;Pour la requête GET il faut saisir un paramètre 'address'. Liste des paramètres saisis : &quot;
+<span class="fc" id="L130">							+ allParams.toString());</span>
+<span class="fc" id="L131">			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,</span>
+					&quot;Pour la requête GET il faut saisir un paramètre 'address'. Liste des paramètres saisis : &quot;
+<span class="fc" id="L133">							+ allParams.toString());</span>
+		}
+<span class="fc" id="L135">		logger.debug(&quot;chidren : &quot; + chidren);</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">		if (chidren.size() == 0) {</span>
+<span class="fc" id="L137">			throw new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Aucun enfant à cette adresse &quot;);</span>
+		}
+<span class="fc" id="L139">		return chidren;</span>
+	}
+
+	@GetMapping(&quot;/fire&quot;)
+	@ResponseStatus(code = HttpStatus.FOUND)
+	// http://localhost:8080/fire?address=&lt;address&gt;
+	public List&lt;MedicalDetailsPersonsAdress&gt; getMedicalDetailsPersonsAdress(
+			@RequestParam Map&lt;String, String&gt; allParams)
+			throws JsonGenerationException, JsonMappingException, IOException, ParseException {
+
+<span class="fc" id="L149">		logger.debug(&quot;allParams.size() : &quot; + allParams.size());</span>
+<span class="fc" id="L150">		logger.debug(&quot;allParams : &quot; + allParams.toString());</span>
+
+<span class="fc" id="L152">		List&lt;MedicalDetailsPersonsAdress&gt; medicalDetailsPersonsAdresses = new ArrayList&lt;MedicalDetailsPersonsAdress&gt;();</span>
+
+<span class="fc" id="L154">		String idAdress = allParams.get(&quot;address&quot;);</span>
+<span class="pc bpc" id="L155" title="1 of 4 branches missed.">		if (allParams.size() == 1 &amp;&amp; idAdress != null) {</span>
+
+<span class="fc" id="L157">			String idFireStation = fireStationService.getFireStationAdress(idAdress);</span>
+
+<span class="fc" id="L159">			List&lt;Person&gt; tempPersons = personService.getPersonAdress(idAdress);</span>
+<span class="fc bfc" id="L160" title="All 2 branches covered.">			if (tempPersons.size() == 0) {</span>
+<span class="fc" id="L161">				throw new ResponseStatusException(HttpStatus.NOT_FOUND,</span>
+						&quot;Aucun personne à cette adresse&quot;);
+			}
+
+<span class="fc bfc" id="L165" title="All 2 branches covered.">			for (Person tempPerson : tempPersons) {</span>
+<span class="fc" id="L166">				MedicalRecord tempMedicalRedord = medicalRecordService.getMedicalRecordPerson(tempPerson.getFirstName(),</span>
+<span class="fc" id="L167">						tempPerson.getLastName());</span>
+<span class="fc" id="L168">				medicalDetailsPersonsAdresses.add(</span>
+						new MedicalDetailsPersonsAdress(
+								idFireStation,
+<span class="fc" id="L171">								tempPerson.getFirstName(),</span>
+<span class="fc" id="L172">								tempPerson.getLastName(),</span>
+<span class="fc" id="L173">								tempPerson.getPhone(),</span>
+<span class="fc" id="L174">								DateCalculator.ageCalculYears(tempMedicalRedord.getBirthdate(),</span>
+<span class="fc" id="L175">										LocalDate.now(),</span>
+										DATE_FORMAT),
+<span class="fc" id="L177">								tempMedicalRedord.getMedications(),</span>
+<span class="fc" id="L178">								tempMedicalRedord.getAllergies()));</span>
+<span class="fc" id="L179">			}</span>
+
+<span class="fc" id="L181">		} else {</span>
+<span class="fc" id="L182">			logger.error(</span>
+					&quot;Pour la requête GET il faut saisir un paramètre 'address'. Liste des paramètres saisis : &quot;
+<span class="fc" id="L184">							+ allParams.toString());</span>
+<span class="fc" id="L185">			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,</span>
+					&quot;Pour la requête GET il faut saisir un paramètre 'address'. Liste des paramètres saisis : &quot;
+<span class="fc" id="L187">							+ allParams.toString());</span>
+		}
+<span class="fc" id="L189">		logger.debug(&quot;medicalDetailsPersonsAdresses : &quot; + medicalDetailsPersonsAdresses);</span>
+<span class="pc bpc" id="L190" title="1 of 2 branches missed.">		if (medicalDetailsPersonsAdresses.size() == 0) {</span>
+<span class="nc" id="L191">			throw new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Aucun enfant à cette adresse &quot;);</span>
+		}
+<span class="fc" id="L193">		return medicalDetailsPersonsAdresses;</span>
+	}
+
+	@GetMapping(&quot;/communityEmail&quot;)
+	@ResponseStatus(code = HttpStatus.FOUND)
+	public List&lt;String&gt; getEmailsCity(
+			@RequestParam Map&lt;String, String&gt; allParams)
+			throws JsonGenerationException, JsonMappingException, IOException, ParseException {
+
+<span class="fc" id="L202">		logger.debug(&quot;allParams.size() : &quot; + allParams.size());</span>
+<span class="fc" id="L203">		logger.debug(&quot;allParams : &quot; + allParams.toString());</span>
+
+<span class="fc" id="L205">		List&lt;String&gt; listEmails = new ArrayList&lt;String&gt;();</span>
+
+<span class="fc" id="L207">		String idCity = allParams.get(&quot;city&quot;);</span>
+<span class="pc bpc" id="L208" title="1 of 4 branches missed.">		if (allParams.size() == 1 &amp;&amp; idCity != null) {</span>
+
+<span class="fc bfc" id="L210" title="All 2 branches covered.">			if (personService.getPersonCity(idCity).size() == 0) {</span>
+<span class="fc" id="L211">				throw new ResponseStatusException(HttpStatus.NOT_FOUND,</span>
+						&quot;Aucun personne à cette city&quot;);
+			}
+<span class="fc bfc" id="L214" title="All 2 branches covered.">			for (Person tempPerson : personService.getPersonCity(idCity)) {</span>
+<span class="pc bpc" id="L215" title="1 of 2 branches missed.">				if (tempPerson.getEmail() != null)</span>
+<span class="fc" id="L216">					listEmails.add(tempPerson.getEmail());</span>
+<span class="fc" id="L217">			}</span>
+
+		} else {
+<span class="fc" id="L220">			logger.error(</span>
+					&quot;Pour la requête GET il faut saisir un paramètre 'city'. Liste des paramètres saisis : &quot;
+<span class="fc" id="L222">							+ allParams.toString());</span>
+<span class="fc" id="L223">			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,</span>
+					&quot;Pour la requête GET il faut saisir un paramètre 'city'. Liste des paramètres saisis : &quot;
+<span class="fc" id="L225">							+ allParams.toString());</span>
+		}
+<span class="fc" id="L227">		logger.debug(&quot;listEmails : &quot; + listEmails);</span>
+<span class="pc bpc" id="L228" title="1 of 2 branches missed.">		if (listEmails.size() == 0) {</span>
+<span class="nc" id="L229">			throw new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Aucune adresse Email à cette city &quot;);</span>
+		}
+<span class="fc" id="L231">		listEmails = listEmails.stream()</span>
+<span class="fc" id="L232">				.distinct()</span>
+<span class="fc" id="L233">				.collect(Collectors.toList());</span>
+<span class="fc" id="L234">		return listEmails;</span>
+	}
+
+	@GetMapping(&quot;/personInfo&quot;)
+	@ResponseStatus(code = HttpStatus.FOUND)
+	// http://localhost:9090/personInfo?firstName=&lt;firstName&gt;&amp;lastName=&lt;lastName&gt;
+	public List&lt;PersonInfosName&gt; getPersonInfosName(
+			@RequestParam Map&lt;String, String&gt; allParams)
+			throws JsonGenerationException, JsonMappingException, IOException, ParseException {
+
+<span class="fc" id="L244">		logger.debug(&quot;allParams.size() : &quot; + allParams.size());</span>
+<span class="fc" id="L245">		logger.debug(&quot;allParams : &quot; + allParams.toString());</span>
+
+<span class="fc" id="L247">		List&lt;PersonInfosName&gt; personInfosNames = new ArrayList&lt;PersonInfosName&gt;();</span>
+
+<span class="fc" id="L249">		String idFirstName = allParams.get(&quot;firstName&quot;);</span>
+<span class="fc" id="L250">		String idLastName = allParams.get(&quot;lastName&quot;);</span>
+
+<span class="pc bpc" id="L252" title="1 of 4 branches missed.">		if (allParams.size() &gt; 0 &amp;&amp; idLastName != null) {</span>
+
+<span class="fc" id="L254">			List&lt;Person&gt; tempPersons = personService.getPerson(idFirstName, idLastName);</span>
+
+<span class="pc bpc" id="L256" title="1 of 2 branches missed.">			if (tempPersons != null) {</span>
+
+<span class="fc bfc" id="L258" title="All 2 branches covered.">				if (tempPersons.size() == 0) {</span>
+<span class="fc" id="L259">					throw new ResponseStatusException(HttpStatus.NOT_FOUND,</span>
+							&quot;Aucun personne avec ce nom&quot;);
+				}
+
+<span class="fc bfc" id="L263" title="All 2 branches covered.">				for (Person tempPerson : tempPersons) {</span>
+<span class="fc" id="L264">					MedicalRecord tempMedicalRedord = medicalRecordService.getMedicalRecordPerson(</span>
+<span class="fc" id="L265">							tempPerson.getFirstName(),</span>
+<span class="fc" id="L266">							tempPerson.getLastName());</span>
+<span class="fc" id="L267">					personInfosNames.add(</span>
+							new PersonInfosName(
+<span class="fc" id="L269">									tempPerson.getFirstName(),</span>
+<span class="fc" id="L270">									tempPerson.getLastName(),</span>
+<span class="fc" id="L271">									tempPerson.getAddress(),</span>
+<span class="fc" id="L272">									tempPerson.getEmail(),</span>
+<span class="fc" id="L273">									DateCalculator.ageCalculYears(tempMedicalRedord.getBirthdate(),</span>
+<span class="fc" id="L274">											LocalDate.now(),</span>
+											DATE_FORMAT),
+<span class="fc" id="L276">									tempMedicalRedord.getMedications(),</span>
+<span class="fc" id="L277">									tempMedicalRedord.getAllergies()));</span>
+
+<span class="fc" id="L279">				}</span>
+			}
+<span class="fc" id="L281">		} else {</span>
+<span class="fc" id="L282">			logger.error(</span>
+					&quot;Pour la requête GET il faut saisir un paramètre 'lastName' et 'firstName'. Liste des paramètres saisis : &quot;
+<span class="fc" id="L284">							+ allParams.toString());</span>
+<span class="fc" id="L285">			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,</span>
+					&quot;Pour la requête GET il faut saisir un paramètre 'lastName' et 'firstName'. Liste des paramètres saisis : &quot;
+<span class="fc" id="L287">							+ allParams.toString());</span>
+		}
+<span class="pc bpc" id="L289" title="1 of 2 branches missed.">		if (personInfosNames == null) {</span>
+<span class="nc" id="L290">			throw new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Aucune personne ne correspond&quot;);</span>
+		}
+<span class="pc bpc" id="L292" title="1 of 2 branches missed.">		if (personInfosNames.size() == 0) {</span>
+<span class="nc" id="L293">			throw new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Aucune personne ne correspond&quot;);</span>
+		}
+<span class="fc" id="L295">		logger.debug(&quot;medicalDetailsPersonsAdresses : &quot; + personInfosNames);</span>
+<span class="fc" id="L296">		return personInfosNames;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>
