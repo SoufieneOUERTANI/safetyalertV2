@@ -4,10 +4,14 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-@Data
+@ToString
+@Getter
+@Setter
 @NoArgsConstructor
 public class Mapping {
 

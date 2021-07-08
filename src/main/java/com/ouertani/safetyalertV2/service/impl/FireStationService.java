@@ -20,11 +20,6 @@ import com.ouertani.safetyalertV2.model.Mapping;
 import com.ouertani.safetyalertV2.service.IFireStationService;
 import com.ouertani.safetyalertV2.service.IMappingService;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@NoArgsConstructor
-@Data
 @Service
 public class FireStationService implements IFireStationService {
 
